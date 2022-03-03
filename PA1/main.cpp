@@ -8,8 +8,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <string.h>
 #include <vector>
 #include <algorithm>
+#include <stdio.h>
 //#include <set>
 
 
@@ -39,8 +41,8 @@ int main(int argc, char *argv[]){
             LexItem kw_tok;
 
             // vectors for output
-            vector<int> iconst_v;  // TODO: maybe just use sets?
-            vector<float> rconst_v;
+            vector<string> iconst_v;  // TODO: maybe just use sets?
+            vector<string> rconst_v;
             vector<string> sconst_v;
             vector<string> ident_v;
 
@@ -102,13 +104,27 @@ int main(int argc, char *argv[]){
                 }
                 if (tok.GetToken() == ICONST){
                     // put in a list?
-                    iconst_v.push_back(tok.GetToken());
+                    iconst_v.push_back(tok.GetLexeme());
                 }
                 if (tok == Token::RCONST){
-                    rconst_v.push_back(tok.GetToken());
+                    if (tok.GetLexeme() == ".0" || tok.GetLexeme() == "0.0"){  // if .0 simplify to 0
+                        rconst_v.push_back("0");
+                    }
+                    else if (tok.GetLexeme()[0] == '.'){  // add 0 if not present
+                        string temp = "0";
+                        temp.append(tok.GetLexeme());
+                        rconst_v.push_back(temp);
+                    }
+                    else{
+                        rconst_v.push_back(tok.GetLexeme());
+                    }
                 }
                 if (tok == Token::SCONST){
-                    sconst_v.push_back(tok.GetLexeme());
+                    // add quotes back for output list
+                    string temp = "'";
+                    temp.append(tok.GetLexeme());
+                    temp.append("'");
+                    sconst_v.push_back(temp);
                 }
                 if (tok == Token::IDENT){
                     ident_v.push_back(tok.GetLexeme());
@@ -127,6 +143,23 @@ int main(int argc, char *argv[]){
                 cout << "Lines: " << tok.GetLinenum() << endl;
                 cout << "Tokens: " << num_tokens << endl;
                 // handle flags in order: -iconst, -rconst, -sconst, -idents
+                // NOTE: above comment seems to be incorrect instructions given?
+                if (sconst_seen){
+                    if (sconst_v.size() > 0){
+                        //set<string> tempset;
+                        //copy(sconst_v.begin(), sconst_v.end(), tempset);
+                        //sconst_v.clear();
+                        //sconst_v.assign(tempset.begin(), tempset.end());
+
+                        sort (sconst_v.begin(), sconst_v.end());
+                        unique(sconst_v.begin(), sconst_v.end());
+
+                        cout << "STRINGS:" << endl;
+                        for (string i : sconst_v){
+                            cout << i << endl;
+                        }
+                    }
+                }
                 if (iconst_seen){
                     if (iconst_v.size() > 0){
                         // vector to set to vector to remove duplicates
@@ -137,11 +170,12 @@ int main(int argc, char *argv[]){
                         //iconst_v.assign(tempset.begin(), tempset.end());
                         // sort before output
 
-                        unique(iconst_v.begin(), iconst_v.end());
                         sort(iconst_v.begin(), iconst_v.end());
+                        unique(iconst_v.begin(), iconst_v.end());
+                        iconst_v.pop_back();  // FIXME: shitty workaround #3
 
                         cout << "INTEGERS:" << endl;
-                        for (int i : iconst_v){  // FIXME: i is fine right?
+                        for (string i : iconst_v){
                             cout << i << endl;
                         }
                     }
@@ -153,27 +187,11 @@ int main(int argc, char *argv[]){
                         //rconst_v.clear();
                         //rconst_v.assign(tempset.begin(), tempset.end());
 
-                        unique(rconst_v.begin(), rconst_v.end());
                         sort(rconst_v.begin(), rconst_v.end());
+                        unique(rconst_v.begin(), rconst_v.end());
 
                         cout << "REALS:" << endl;
-                        for (float i : rconst_v){
-                            cout << i << endl;
-                        }
-                    }
-                }
-                if (sconst_seen){
-                    if (sconst_v.size() > 0){
-                        //set<string> tempset;
-                        //copy(sconst_v.begin(), sconst_v.end(), tempset);
-                        //sconst_v.clear();
-                        //sconst_v.assign(tempset.begin(), tempset.end());
-
-                        unique(sconst_v.begin(), sconst_v.end());
-                        sort (sconst_v.begin(), sconst_v.end());
-
-                        cout << "STRINGS:" << endl;
-                        for (string i : sconst_v){
+                        for (string i : rconst_v){
                             cout << i << endl;
                         }
                     }
@@ -185,15 +203,19 @@ int main(int argc, char *argv[]){
                         //ident_v.clear();
                         //ident_v.assign(tempset.begin(), tempset.end());
 
-                        unique(ident_v.begin(), ident_v.end());
                         sort (ident_v.begin(), ident_v.end());
+                        unique(ident_v.begin(), ident_v.end());
 
                         cout << "IDENTIFIERS:" << endl;
-                        // FIXME: print comma separated list of every identifier 
                         // found in alpha order
-                        for (string i : ident_v){
-                            cout << i << ",";
+                        // for (string i : ident_v){
+                        //     cout << i << ", ";
+                        // }
+                        // FIXME: size() - 2? whitespace entry?
+                        for (int i = 0; i < ident_v.size() - 2; i++){
+                            cout << ident_v[i] << ", ";
                         }
+                        cout << ident_v[ident_v.size() - 2] << endl;
                     }
                 }
             }

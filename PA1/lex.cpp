@@ -119,7 +119,7 @@ LexItem id_or_kw(const string& lexeme, int linenum){
 ostream& operator<<(ostream& out, const LexItem& tok) {
 	Token t = tok.GetToken();
     if (t == ERR){
-        out << "Error in line " << tok.GetLinenum() << " (" 
+        out << "Error in line " << tok.GetLinenum() + 1 << " (" 
         << tok.GetLexeme() << ")";
     }
     else if (t == ICONST || t == RCONST || t == SCONST || t == IDENT){
@@ -267,17 +267,34 @@ LexItem getNextToken(istream& in, int& linenum){
                     //     break;
                     // }
                 }
-                lexeme += ch;  // not escaped so just add to string lexeme
-                if (ch == '\''){  // not escaped - done with string
-                    // just an end marker - don't putback(ch)
-                    return LexItem(STRING, lexeme, linenum);
+                if (ch == '\"'){  // FIXME: shitty workaround
+                    lexeme += ch;
+                    return LexItem(ERR, lexeme, linenum);
                 }
-                lexeme += ch;
+                if (ch == '\n'){  // FIXME: shitty workaround #2
+                    return LexItem(ERR, lexeme, linenum);
+                }
+                lexeme += ch;  // not escaped so just add to string lexeme
+                if (ch == '\''){  // done with string
+                    // just an end marker - don't putback(ch)
+                    if (lexeme.size() >= 2){  // remove quotes
+                        lexeme = lexeme.substr(1, lexeme.size() - 2);
+                    }
+                    return LexItem(SCONST, lexeme, linenum);
+                }
                 break;
 
             case ININT:
                 if (isdigit(ch)){
                     lexeme += ch;
+                }
+                else if (ch == '.'){
+                    lexeme += ch;
+                    lexstate = INREAL;
+                }
+                else if (isalpha(ch)){
+                    in.putback(ch);
+                    lexstate = INID;
                 }
                 else{  // done with integer
                     lexstate = START;
@@ -291,17 +308,21 @@ LexItem getNextToken(istream& in, int& linenum){
                     lexeme += ch;
                 }
                 else if (ch == '.'){  // can't have another . in real
+                    lexeme += ch;
                     return LexItem(ERR, lexeme, linenum);
                 }
                 else{  // done with real
                     lexstate = START;
                     in.putback(ch); // need to check ch again
-                    return LexItem(REAL, lexeme, linenum);
+                    return LexItem(RCONST, lexeme, linenum);
                 }
                 break;
 
             case INCOMMENT:
                 // it's a comment - count lines and wait for end
+                if (in.eof()){  // eof before close comment
+                    return LexItem(ERR, lexeme, linenum);
+                }
                 if (ch == '\n'){  // can have multiline comment
                     linenum++;
                 }
