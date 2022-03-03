@@ -1,4 +1,4 @@
-# CS 280
+# CS 280: PA1
 
 Spring 2022
 Programming Assignment 1
@@ -180,36 +180,40 @@ there are no RCONSTs in the input, then nothing is printed.
 comma-separated list of every identifier found, in alphabetical order. If there are no IDENTs
 in the input, then nothing is printed.
 
-Note:
+## Note
+
 You are provided by a set of 17 testing files associated with Programming Assignment 1.
 Vocareum automatic grading will be based on these testing files. You may use them to check and
 test your implementation. These are available in compressed archive “PA1 Test Cases.zip” on
 Canvas assignment. The testing case of each file is defined in the Grading table below.
-Submission Guidelines
-1.1. Submit all your implementation files for the “lex.cpp” and the testing program through
+
+## Submission Guidelines
+
+1. Submit all your implementation files for the “lex.cpp” and the testing program through
 Vocareum. The “lex.h” header file will be propagated to your Work Directory.
-1.2. Submissions after the due date are accepted with a fixed penalty of 25%. No
+2. Submissions after the due date are accepted with a fixed penalty of 25%. No
 submission is accepted after Wednesday 11:59 pm, March 9, 2022.
 
 ## Grading Table
 
-Case Test File Points
-1 Successful compilation 1
-2 Cannot Open the File (cantopen) 1
-3 Empty File (emptyfile) 1
-4 Only one file name allowed (onefileonly) 1
-5 No Specified Input File (nofile) 1
-6 All Integers (ints) 1
-7 Bad argument (badarg) 1
-8 All Identifiers (idents) 1
-9 Valid strings (strings) 1
-10 Invalid string I (invstr1) 1
-11 Invalid string II (invstr2) 1
-12 All Reals (reals) 1
-13 Invalid Real (realerr) 1
-14 Valid operators (allops) 1
-15 Invalid Symbol (invsymbol) 1
-16 Comments (comments) 1
-17 Invalid comment (errcomment) 2
-18 All flags set (allflags) 2
-20
+| Case |              Test File                   | Points |
+|------|------------------------------------------|--------|
+| 1    | Successful compilation                   | 1      |
+| 2    | Cannot Open the File (cantopen)          | 1      |
+| 3    | Empty File (emptyfile)                   | 1      |
+| 4    | Only one file name allowed (onefileonly) | 1      |
+| 5    | No Specified Input File (nofile)         | 1      |
+| 6    | All Integers (ints)                      | 1      |
+| 7    | Bad argument (badarg)                    | 1      |
+| 8    | All Identifiers (idents)                 | 1      |
+| 9    | Valid strings (strings)                  | 1      |
+| 10   | Invalid string I (invstr1)               | 1      |
+| 11   | Invalid string II (invstr2)              | 1      |
+| 12   | All Reals (reals)                        | 1      |
+| 13   | Invalid Real (realerr)                   | 1      |
+| 14   | Valid operators (allops)                 | 1      |
+| 15   | Invalid Symbol (invsymbol)               | 1      |
+| 16   | Comments (comments)                      | 1      |
+| 17   | Invalid comment (errcomment)             | 2      |
+| 18   | All flags set (allflags)                 | 2      |
+|      |                                          | **20** |
