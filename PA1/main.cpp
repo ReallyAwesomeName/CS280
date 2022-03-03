@@ -130,12 +130,19 @@ int main(int argc, char *argv[]){
                     ident_v.push_back(tok.GetLexeme());
                 }
                 ++num_tokens;  // count all tokens
-            }
+            }  // end while
             if (tok == ERR){  // if error print message and exit
                 // cout << "Error in line " << tok.GetLinenum() <<
                 // " (" << tok.GetLexeme() << ")" << endl;
-                cout << tok << endl;
-                exit(1);
+                if (tok.GetLexeme() == "end comment err"){ // special case comment err
+                    cout << endl << "Missing a comment end delimiters '*)' at line "
+                    << tok.GetLinenum() + 1 << endl;
+                    tok = LexItem(DONE, "end comment err", linenum + 1);
+                }
+                else{
+                    cout << tok << endl;
+                    exit(1);
+                }
             }
             if (tok == DONE){
                 file.close();
@@ -202,20 +209,25 @@ int main(int argc, char *argv[]){
                         //copy(ident_v.begin(), ident_v.end(), tempset);
                         //ident_v.clear();
                         //ident_v.assign(tempset.begin(), tempset.end());
-
-                        sort (ident_v.begin(), ident_v.end());
-                        unique(ident_v.begin(), ident_v.end());
-
-                        cout << "IDENTIFIERS:" << endl;
-                        // found in alpha order
-                        // for (string i : ident_v){
-                        //     cout << i << ", ";
-                        // }
-                        // FIXME: size() - 2? whitespace entry?
-                        for (int i = 0; i < ident_v.size() - 2; i++){
-                            cout << ident_v[i] << ", ";
+                        if (ident_v.size() == 1){  // FIXME: shitty workaround #4
+                            cout << "IDENTIFIERS:" << endl;
+                            cout << ident_v[0] << endl;
                         }
-                        cout << ident_v[ident_v.size() - 2] << endl;
+                        else{
+                            sort (ident_v.begin(), ident_v.end());
+                            unique(ident_v.begin(), ident_v.end());
+
+                            cout << "IDENTIFIERS:" << endl;
+                            // found in alpha order
+                            // for (string i : ident_v){
+                            //     cout << i << ", ";
+                            // }
+                            // FIXME: size() - 2? whitespace entry?
+                            for (int i = 0; i < ident_v.size() - 2; i++){
+                                cout << ident_v[i] << ", ";
+                            }
+                            cout << ident_v[ident_v.size() - 2] << endl;
+                        }
                     }
                 }
             }

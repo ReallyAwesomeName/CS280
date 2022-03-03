@@ -155,7 +155,7 @@ LexItem getNextToken(istream& in, int& linenum){
                 if (isalpha(ch) || ch == '_'){
                     lexstate = INID;
                 }
-                else if (ch == '\''){  // TODO: make sure this works
+                else if (ch == '\''){
                     escaped = false;
                     lexstate = INSTRING;
                     continue;
@@ -163,23 +163,22 @@ LexItem getNextToken(istream& in, int& linenum){
                 else if (isdigit(ch)){
                     lexstate = ININT;
                 }
-                else if (ch == '.'){  // TODO: put this in switch?
+                else if (ch == '.'){
                     auto temp = in.peek();
                     if (isdigit(temp)){
                         lexstate = INREAL;
                         continue;
                     }
-                    else{  // TODO: else what? return ERR?
+                    else{
                         lexeme += temp;
                         return LexItem(ERR, lexeme, linenum);
                     }
                 }
-                else if (ch == '(' && in.peek() == '*'){
-                    lexstate = INCOMMENT;
-                    continue;
-                }
+                // else if (ch == '(' && in.peek() == '*'){
+                //     lexstate = INCOMMENT;
+                //     continue;
+                // }
                 else{
-                    // TODO: ? 
                     tok = ERR;
                     switch (ch){
                         case '+':
@@ -235,7 +234,7 @@ LexItem getNextToken(istream& in, int& linenum){
                 }
                 break;
 
-            // TODO: FINISH LEXSTATES
+            // identified lexstate cases
             case INID:
                 if (isalpha(ch) || isdigit(ch) || ch == '_'){
                     lexeme += ch;
@@ -292,10 +291,11 @@ LexItem getNextToken(istream& in, int& linenum){
                     lexeme += ch;
                     lexstate = INREAL;
                 }
-                else if (isalpha(ch)){
-                    in.putback(ch);
-                    lexstate = INID;
-                }
+                // else if (isalpha(ch)){
+                //     in.putback(ch);
+                //     lexstate = INID;
+                //     return LexItem(ICONST, lexeme, linenum);
+                // }
                 else{  // done with integer
                     lexstate = START;
                     in.putback(ch);  // need to check ch again
@@ -320,8 +320,8 @@ LexItem getNextToken(istream& in, int& linenum){
 
             case INCOMMENT:
                 // it's a comment - count lines and wait for end
-                if (in.eof()){  // eof before close comment
-                    return LexItem(ERR, lexeme, linenum);
+                if (in.peek() == -1){  // eof before close comment
+                    return LexItem(ERR, "end comment err", linenum);
                 }
                 if (ch == '\n'){  // can have multiline comment
                     linenum++;
