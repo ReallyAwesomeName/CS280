@@ -14,35 +14,35 @@ each printed number in reverse order has to be followed by a running total of th
 reverse order too. At the end, the function should print out the maximum value entered. For
 example, an input and output dialog might be the following:
 
-Enter any sequence of positive numbers, then enter 0 to end: 45 67 32 12 0
-12 Total: 156
-32 Total: 144
-67 Total: 112
-45 Total: 45
+Enter any sequence of positive numbers, then enter 0 to end: 45 67 32 12 0\
+12 Total: 156\
+32 Total: 144\
+67 Total: 112\
+45 Total: 45\
 The maximum value is: 67
 
-The PrintRevNums has the following header definition:
+The PrintRevNums has the following header definition:\
 void PrintRevNums(int sum);
 
 ## Vocareum Automatic Grading
 
 • Implement the PrintRevNums() function in a file, called “PrintRevNums.cpp” and
-upload it to Vocareum.
+upload it to Vocareum.\
 • You can implement any driver program for testing your implementation. However, a driver
 program is provided on Vocareum for testing the implementation, called “prog.cpp”. The
 “prog.cpp” will be propagated to your work directory. The program asks the user to enter
 any sequence of positive numbers, then enter 0 to end, then calls the
-PrintRevNums()function.
+PrintRevNums()function.\
 • The testing is based on the correct results returned by the call to your recursive function
 PrintRevNums(), and the satisfaction of using recursive approach for the solution of
 the problem, rather than an iterative one. Test cases files will be used instead of the input
-from the keyboard on Vocareum.
+from the keyboard on Vocareum.\
 • “prog.cpp” is available with the other assignment material on Canvas.
 
 ## Submission Guidelines
 
 • Please upload your implementation of the function to Vocareum as a
 “PrintRevNums().cpp” or any other file name you choose. The file should include the
-implementation of the function PrintRevNums().
+implementation of the function PrintRevNums().\
 • Submissions after the due date are accepted with a fixed penalty of 25%. No submission
 is accepted after Wednesday 11:59 pm, March 9, 2022.
