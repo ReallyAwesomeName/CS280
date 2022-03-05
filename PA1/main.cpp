@@ -12,7 +12,6 @@
 #include <vector>
 #include <algorithm>
 #include <stdio.h>
-//#include <set>
 
 
 using namespace std;
@@ -41,7 +40,7 @@ int main(int argc, char *argv[]){
             LexItem kw_tok;
 
             // vectors for output
-            vector<string> iconst_v;  // TODO: maybe just use sets?
+            vector<string> iconst_v;
             vector<string> rconst_v;
             vector<string> sconst_v;
             vector<string> ident_v;
@@ -88,26 +87,17 @@ int main(int argc, char *argv[]){
             }
 
             // ~~~~~~~~~~ print stuff out ~~~~~~~~~~ 
-            // TODO: maybe use lists?
             while (((tok = getNextToken(file, linenum)) != Token::ERR)
                     && (tok != Token::DONE)){
                 if (v_seen){
-                    // FIXME: print all tokens followed by (lexeme)
-                    // if (tok == Token::IDENT){
-                    //     cout << tok.GetToken() << '(' << tok.GetLexeme() 
-                    //     << ')' << endl;
-                    // }
-                    // else{
-                    //     cout << tok.GetToken();
-                    // }
+                    // if -v, print each token as it is read and recognized
                     cout << tok << endl;
                 }
                 if (tok.GetToken() == ICONST){
-                    // put in a list?
                     iconst_v.push_back(tok.GetLexeme());
                 }
                 if (tok == Token::RCONST){
-                    if (tok.GetLexeme() == ".0" || tok.GetLexeme() == "0.0"){  // if .0 simplify to 0
+                    if (tok.GetLexeme() == ".0" || tok.GetLexeme() == "0.0"){
                         rconst_v.push_back("0");
                     }
                     else if (tok.GetLexeme()[0] == '.'){  // add 0 if not present
@@ -131,9 +121,8 @@ int main(int argc, char *argv[]){
                 }
                 ++num_tokens;  // count all tokens
             }  // end while
+
             if (tok == ERR){  // if error print message and exit
-                // cout << "Error in line " << tok.GetLinenum() <<
-                // " (" << tok.GetLexeme() << ")" << endl;
                 if (tok.GetLexeme() == "end comment err"){ // special case comment err
                     cout << endl << "Missing a comment end delimiters '*)' at line "
                     << tok.GetLinenum() + 1 << endl;
@@ -150,14 +139,11 @@ int main(int argc, char *argv[]){
                 cout << "Lines: " << tok.GetLinenum() << endl;
                 cout << "Tokens: " << num_tokens << endl;
                 // handle flags in order: -iconst, -rconst, -sconst, -idents
-                // NOTE: above comment seems to be incorrect instructions given?
+                // NOTE: above order is incorrect according to vocareum
+                // use order: -sconst, -iconst, -rconst, -idents
                 if (sconst_seen){
                     if (sconst_v.size() > 0){
-                        //set<string> tempset;
-                        //copy(sconst_v.begin(), sconst_v.end(), tempset);
-                        //sconst_v.clear();
-                        //sconst_v.assign(tempset.begin(), tempset.end());
-
+                        // sort and remove duplicates
                         sort (sconst_v.begin(), sconst_v.end());
                         unique(sconst_v.begin(), sconst_v.end());
 
@@ -169,14 +155,7 @@ int main(int argc, char *argv[]){
                 }
                 if (iconst_seen){
                     if (iconst_v.size() > 0){
-                        // vector to set to vector to remove duplicates
-                        // TODO: maybe just use sets to begin with?
-                        //set<int> tempset;
-                        //copy(iconst_v.begin(), iconst_v.end(), tempset);
-                        //iconst_v.clear();
-                        //iconst_v.assign(tempset.begin(), tempset.end());
-                        // sort before output
-
+                        // sort and remove duplicates
                         sort(iconst_v.begin(), iconst_v.end());
                         unique(iconst_v.begin(), iconst_v.end());
                         iconst_v.pop_back();  // FIXME: shitty workaround #3
@@ -189,11 +168,7 @@ int main(int argc, char *argv[]){
                 }
                 if (rconst_seen){
                     if (rconst_v.size() > 0){
-                        //set<float> tempset;
-                        //copy(rconst_v.begin(), rconst_v.end(), tempset);
-                        //rconst_v.clear();
-                        //rconst_v.assign(tempset.begin(), tempset.end());
-
+                        // sort and remove duplicates
                         sort(rconst_v.begin(), rconst_v.end());
                         unique(rconst_v.begin(), rconst_v.end());
 
@@ -205,11 +180,8 @@ int main(int argc, char *argv[]){
                 }
                 if (ident_seen){
                     if (ident_v.size() > 0){
-                        //set<string> tempset;
-                        //copy(ident_v.begin(), ident_v.end(), tempset);
-                        //ident_v.clear();
-                        //ident_v.assign(tempset.begin(), tempset.end());
                         if (ident_v.size() == 1){  // FIXME: shitty workaround #4
+                            // only for when printing a single ident
                             cout << "IDENTIFIERS:" << endl;
                             cout << ident_v[0] << endl;
                         }
@@ -218,10 +190,6 @@ int main(int argc, char *argv[]){
                             unique(ident_v.begin(), ident_v.end());
 
                             cout << "IDENTIFIERS:" << endl;
-                            // found in alpha order
-                            // for (string i : ident_v){
-                            //     cout << i << ", ";
-                            // }
                             // FIXME: size() - 2? whitespace entry?
                             for (int i = 0; i < ident_v.size() - 2; i++){
                                 cout << ident_v[i] << ", ";
@@ -231,8 +199,6 @@ int main(int argc, char *argv[]){
                     }
                 }
             }
-
-
         }
     }
     return 0;

@@ -4,13 +4,12 @@
  * Professor Bassel Arafeh
 */
 
+#include "lex.h"
 #include <map>
 
-#include "lex.h"
 
 using namespace std;
 
-// #TODO: MIGHT BE MISSING TOKENS
 static map<Token,string> tokenAll = {
     // reserved words
     {PROGRAM, "PROGRAM"},
@@ -54,26 +53,6 @@ static map<Token,string> tokenAll = {
     {ERR, "ERROR"},
     {DONE, "DONE"},
     {COMMA, "COMMA"},
-
-    // // operators
-    // {PLUS, "+"},
-    // {MINUS, "-"},
-    // {MULT, "*"},
-    // {DIV, "/"},
-    // {ASSOP, ":="},
-    // {LPAREN, "("},
-    // {RPAREN, ")"},
-    // {EQUAL, "="},
-    // {GTHAN, ">"},
-    // {LTHAN, "<"},
-
-    // // terminals
-    // {COMMA, ","},
-    // {SEMICOL, ";"},
-    // {COLON, ":"},
-    // {DOT, "."}
-
-
 };
 
 static map<string, Token> kwmap{
@@ -113,25 +92,22 @@ LexItem id_or_kw(const string& lexeme, int linenum){
 	return LexItem(tok, lexeme, linenum);
 }
 
-// The operator<< function should print out the string value of 
-// the Token in the tok object, followed by its lexeme and 
-// line number.
 ostream& operator<<(ostream& out, const LexItem& tok) {
 	Token t = tok.GetToken();
+    // If ERR, print “Error in line N ({lexeme})” and then stop running.
+    // stop running is done in main.cpp
     if (t == ERR){
         out << "Error in line " << tok.GetLinenum() + 1 << " (" 
         << tok.GetLexeme() << ")";
     }
+    // If Token is IDENT, ICONST, RCONST, or SCONST, print
+    // out token followed by its lexeme between parentheses
     else if (t == ICONST || t == RCONST || t == SCONST || t == IDENT){
         out << tokenAll[t] << "(" << tok.GetLexeme() << ")";
     }
     else{
         out<<tokenAll[t];
     }
-	// out << tokenAll[t]
-    //     << "(" << tok.GetLexeme() << ")"
-    //     << " Line #: " << tok.GetLinenum() << endl;
-
 	return out;
 }
 
@@ -145,7 +121,7 @@ LexItem getNextToken(istream& in, int& linenum){
     while (in.get(ch)){
         switch (lexstate){
             case START:  // new lexeme
-                if (ch == '\n'){  // doesn't work below space??
+                if (ch == '\n'){  // doesn't work below space?
                     linenum++;
                 }
                 if (isspace(ch)){
@@ -174,10 +150,6 @@ LexItem getNextToken(istream& in, int& linenum){
                         return LexItem(ERR, lexeme, linenum);
                     }
                 }
-                // else if (ch == '(' && in.peek() == '*'){
-                //     lexstate = INCOMMENT;
-                //     continue;
-                // }
                 else{
                     tok = ERR;
                     switch (ch){
@@ -260,11 +232,6 @@ LexItem getNextToken(istream& in, int& linenum){
                         escaped = false;
                         break;
                     }
-                    // if (ch == 'n'){
-                    //     ch = '\n';  // now start case linenum++ should work?
-                    //     escaped = false;
-                    //     break;
-                    // }
                 }
                 if (ch == '\"'){  // FIXME: shitty workaround
                     lexeme += ch;
@@ -291,11 +258,6 @@ LexItem getNextToken(istream& in, int& linenum){
                     lexeme += ch;
                     lexstate = INREAL;
                 }
-                // else if (isalpha(ch)){
-                //     in.putback(ch);
-                //     lexstate = INID;
-                //     return LexItem(ICONST, lexeme, linenum);
-                // }
                 else{  // done with integer
                     lexstate = START;
                     in.putback(ch);  // need to check ch again
