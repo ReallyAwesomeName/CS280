@@ -1,10 +1,11 @@
 # CS 280: PA1
 
-Spring 2022
-Programming Assignment 1
-February 17, 2022
-Due Date: Sunday, March 6, 2022, 23:59
+Spring 2022\
+Programming Assignment 1\
+February 17, 2022\
+Due Date: Sunday, March 6, 2022, 23:59\
 Total Points: 20
+
 In this programming assignment, you will be building a lexical analyzer for small programming
 language and a program to test it. This assignment will be followed by two other assignments to
 build a parser and interpreter to the same language. Although, we are not concerned about the
