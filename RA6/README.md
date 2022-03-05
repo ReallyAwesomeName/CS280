@@ -1,10 +1,10 @@
 # CS 280: RA6
 
-Fall 2021
-Recitation Assignment 6
-March 3rd, 2022
-Due Date: Monday, March 7, 2022, 23:59
-Total Points: 5
+Fall 2021\
+Recitation Assignment 6\
+March 3rd, 2022\
+Due Date: Monday, March 7, 2022, 23:59\
+Total Points: 5\
 
 Write a recursive C++ function, called PrintRevNums, that reads a positive integer number
 from the keyboard in each call to the function, until a 0 value is entered (base case). In each call
