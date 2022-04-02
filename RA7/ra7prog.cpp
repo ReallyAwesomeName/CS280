@@ -31,7 +31,7 @@ bool isOperand(char ch){
 
 int precedence_value(char op){
 	int prec = 0;
-
+	// 1 is higher precedence than 2
 	if (op == '*' || op == '/'){
 		prec = 1;
 	}
@@ -44,7 +44,8 @@ int precedence_value(char op){
 bool first_precedence_higher(char op1, char op2){
 	bool op1higher = false;
 
-	if (precedence_value(op1) <= precedence_value(op2)){ // >= should be fine
+	if (precedence_value(op1) <= precedence_value(op2)){
+		// 1 is higher precedence than 2
 		op1higher = true;
 	}
 	return op1higher;
@@ -53,15 +54,18 @@ bool first_precedence_higher(char op1, char op2){
 void infToPostfix(string instr){
 	stack<char> charStack;
 	string postfixexp = "";
+	// iterate input expression
 	for (int i = 0; i < instr.length(); i++){
 		char curchar = instr[i]; 
 		if (isOperand(curchar)){
+			// add operands to postfixexp
 			postfixexp += curchar;
 			postfixexp += ' ';
 		}
 		else if (isOperator(curchar)){
 			while(!charStack.empty() && (charStack.top() != '(') 
-				&& first_precedence_higher(charStack.top(), curchar)){
+					&& first_precedence_higher(charStack.top(), curchar)){
+				// pop stack to postfix
 				postfixexp += charStack.top();
 				postfixexp += ' ';
 				charStack.pop();
@@ -69,18 +73,23 @@ void infToPostfix(string instr){
 			charStack.push(curchar);
 		}
 		else if (curchar == '('){
+			// start of parenthesis
 			charStack.push(curchar);
 		}
 		else if (curchar == ')'){
+			// end of parenthesis, add to postfix until finished parenthesis expr
 			while (!charStack.empty() && charStack.top() != '('){
 				postfixexp += charStack.top();
 				postfixexp += ' ';
 				charStack.pop();
 			}
+			// pop the '('
 			charStack.pop();
 		}
-	}
+	} // end instr iteration
+
 	while(!charStack.empty()){
+		// pop whats left of stack to postfix
 		postfixexp += charStack.top();
 		postfixexp += ' ';
 		charStack.pop();
