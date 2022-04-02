@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 #include <stack>
-#include <vector>
 
 using namespace std;
 
@@ -30,46 +29,67 @@ bool isOperand(char ch){
 	}
 }
 
-string stack_to_postfix(stack<char> charStack){
-	string postfixExpr;
-	if (!charStack.empty()){
-		for (int i = 0; i < charStack.size(); i++){
-			if (charStack.top() == ')'){
-				charStack.pop();
-				break;
-			}
-			else{
-				postfixExpr += charStack.top();
-				charStack.pop();
-			}
-		}
+int precedence_value(char op){
+	int prec = 0;
+
+	if (op == '*' || op == '/'){
+		prec = 1;
 	}
-	return postfixExpr;
+	else if (op == '+' || op == '-'){
+		prec = 2;
+	}
+	return prec;
+}
+
+bool first_precedence_higher(char op1, char op2){
+	bool op1higher = false;
+
+	if (precedence_value(op1) <= precedence_value(op2)){ // >= should be fine
+		op1higher = true;
+	}
+	return op1higher;
 }
 
 void infToPostfix(string instr){
-	string postfixExpr;
-	int len = instr.length();
-	stack <char> charStack;
-
-	for (int i = 0; i < len; i++){
-		char curchar = instr[i];
-		if (curchar == '('){
+	stack<char> charStack;
+	string postfixexp = "";
+	for (int i = 0; i < instr.length(); i++){
+		char curchar = instr[i]; 
+		if (isOperand(curchar)){
+			postfixexp += curchar;
+			postfixexp += ' ';
+		}
+		else if (isOperator(curchar)){
+			while(!charStack.empty() && (charStack.top() != '(') 
+				&& first_precedence_higher(charStack.top(), curchar)){
+				postfixexp += charStack.top();
+				postfixexp += ' ';
+				charStack.pop();
+			}
 			charStack.push(curchar);
 		}
-		else if (isalpha(curchar)){
-			postfixExpr += curchar;
+		else if (curchar == '('){
+			charStack.push(curchar);
 		}
 		else if (curchar == ')'){
-			postfixExpr += stack_to_postfix(charStack);
+			while (!charStack.empty() && charStack.top() != '('){
+				postfixexp += charStack.top();
+				postfixexp += ' ';
+				charStack.pop();
+			}
+			charStack.pop();
 		}
 	}
-	postfixExpr += stack_to_postfix(charStack);
-	cout << postfixExpr << endl;
+	while(!charStack.empty()){
+		postfixexp += charStack.top();
+		postfixexp += ' ';
+		charStack.pop();
+	}
+	cout << postfixexp << endl;
 	return;
 }
 
-int main ( ) 
+int main ( )
 {
 	string instr;
 	cout<<"Please enter an infix notation expression using single lowercase characters:" << endl;
