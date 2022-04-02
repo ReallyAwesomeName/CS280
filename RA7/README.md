@@ -1,4 +1,4 @@
-# RA7: Infix to Postfix Conversion
+# RA 7 Submission: Infix to Postfix Conversion
 
 Write a C++ function, called infToPostfix(), that accepts a string as a parameter for an infix expression, converts it to postfix notation, and displays it on the output. The infix expression is formed from single lowercase characters as operands (i.e., ‘a’-‘z’), and the binary operators ‘+’ for addition, ‘-‘ for subtractions, ‘*’ for multiplications, ‘/’ for division, ‘(‘, and ‘)’ for the left and right parentheses. The function assumes the string for the infix expression is syntactically correct. The conversion process allows the use of parentheses, and applies the operator precedence rules, assuming all the operators having left-to-right association. Where, the precedence of ‘*’ and ‘/’ are higher than ‘+’ and ‘-‘. For example, an input and output dialog might be as follows:
 

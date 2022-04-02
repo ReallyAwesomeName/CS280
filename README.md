@@ -1,4 +1,3 @@
-
 # CS 280: Programming Language Concepts
 
 ## Spring 2022 Syllabus

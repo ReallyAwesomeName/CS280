@@ -1,6 +1,6 @@
-# CS 280: RA6
+# RA 6 Submission: Recursion
 
-Fall 2021\
+Spring 2022\
 Recitation Assignment 6\
 March 3rd, 2022\
 Due Date: Monday, March 7, 2022, 23:59\
@@ -14,12 +14,14 @@ each printed number in reverse order has to be followed by a running total of th
 reverse order too. At the end, the function should print out the maximum value entered. For
 example, an input and output dialog might be the following:
 
+```text
 Enter any sequence of positive numbers, then enter 0 to end: 45 67 32 12 0\
 12 Total: 156\
 32 Total: 144\
 67 Total: 112\
 45 Total: 45\
 The maximum value is: 67
+```
 
 The PrintRevNums has the following header definition:\
 void PrintRevNums(int sum);
