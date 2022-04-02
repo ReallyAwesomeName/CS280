@@ -70,7 +70,7 @@ Programming Assignment 3. These points are:
 11. The unary sign operators (+ or -) are applied upon unary numeric operands (i.e., INTEGER,
     REAL).
 
-## Parser Requirements:
+## Parser Requirements
 
 Implement a recursive-descent parser for the given PLSP language. You may use the lexical
 analyzer you wrote for Programming Assignment 1 , OR you may use the provided implementation
@@ -87,15 +87,18 @@ You are given the header file for the parser, “parse.h” and **an incomplete 
 **You should use “parse.cpp” to complete the implementation of the parser.** In addition, “lex.h”,
 “lex.cpp”, and “prog2.cpp” files are also provided. The descriptions of the files are as follows:
 
-**“Parse.h”**\
+### “Parse.h”
+
 “parse.h” includes the following:
+
 - Prototype definitions of the parser functions (e.g., Prog, DeclBlock, ProgBody, etc.)
 
-**“Parse.cpp”**
+### “Parse.cpp”
 
-- A map container that keeps a record of the defined variables in the parsed program, defined
-    as: map<string, bool> defVar;
-    - The key of the defVar is a variable name, and the value is a Boolean that is set to true
+- A map container that keeps a record of the defined variables in the parsed program, defined as:\
+map<string, bool> defVar;
+
+- The key of the defVar is a variable name, and the value is a Boolean that is set to true
        when the first time the variable has been declared, otherwise it is false.
 - A function definition for handling the display of error messages, called ParserError.
 - Functions to handle the process of token lookahead, GetNextToken and PushBackToken,
@@ -104,16 +107,18 @@ You are given the header file for the parser, “parse.h” and **an incomplete 
     value, called ErrCount().
 - Implementations of some functions of the recursive-descent parser.
 
-**“prog2.cpp”**
+### “prog2.cpp”
 
 - You are given the testing program “prog2.cpp” that reads a file name from the command
     line. The file is opened for syntax analysis, as a source code for your parser.
 - A call to Prog() function is made. If the call fails, the program should stop and display a
     message as "Unsuccessful Parsing ", and display the number of errors detected. For example:
-    ```
+
+    ```text
     Unsuccessful Parsing
     Number of Syntax Errors: 3
     ```
+
 - If the call to Prog() function succeeds, the program should stop and display the message
     "Successful Parsing ", and the program stops.
 
@@ -125,11 +130,10 @@ You are given the header file for the parser, “parse.h” and **an incomplete 
     Test Cases.zip” on Canvas assignment. The testing case of each file is defined in the
     Grading table below.
 
-
 - Automatic grading of clean source code testing files (testprog19) will be based on checking
     against the output message:
 
-```
+```text
 Successful Parsing
 ```
 
@@ -177,5 +181,3 @@ testprog2 1 : Missing PROGRAM Keyword | 0.5
 testprog2 2 : Unrecognizable Declaration Block | 0.5
 testprog2 3 : Syntax Error in IF Statement | 0.5
 **Total** | 20
-
-
