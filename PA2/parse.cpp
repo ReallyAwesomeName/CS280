@@ -47,7 +47,7 @@ void ParseError(int line, string msg)
 
 
 //Stmt is either a WriteLnStmt, ForepeatStmt, IfStmt, or AssigStmt
-//Stmt = AssigStmt | IfStmt | WriteStmt | ForStmt 
+// Stmt ::= AssigStmt | IfStmt | WriteLnStmt | ForStmt
 bool Stmt(istream& in, int& line) {
 	bool status;
 	//cout << "in ContrlStmt" << endl;
@@ -85,7 +85,7 @@ bool Stmt(istream& in, int& line) {
 }//End of Stmt
 
 
-//WriteStmt:= wi, ExpreList 
+// WriteLnStmt ::= WRITELN (ExprList)
 bool WriteLnStmt(istream& in, int& line) {
 	LexItem t;
 	//cout << "in WriteStmt" << endl;
@@ -116,7 +116,7 @@ bool WriteLnStmt(istream& in, int& line) {
 }
 
 
-//ExprList:= Expr {,Expr}
+// ExprList ::= Expr {, Expr}
 bool ExprList(istream& in, int& line) {
 	bool status = false;
 	//cout << "in ExprList and before calling Expr" << endl;
@@ -145,4 +145,147 @@ bool ExprList(istream& in, int& line) {
 	return status;
 }
 
+// Prog ::= PROGRAM IDENT; DeclBlock ProgBody
+bool Prog(istream& in, int& line){
+	bool status = false;
+	LexItem tok = Parser::GetNextToken(in, line);
 
+	if (tok.GetToken() == ERR){
+		ParseError(line, "(Prog) Unrecognized Input Pattern");
+	}
+
+	if (error_count > 0){
+		ParseError(line, "(Prog) Invalid statements");
+		return status;
+	}
+
+	// program start
+	if (tok.GetToken() == PROGRAM){
+		// get what's after PROGRAM
+		tok = Parser::GetNextToken(in, line);
+
+		if (tok.GetToken() == IDENT){
+			status = DeclBlock(in, line);
+
+			// go on
+			tok = Parser::GetNextToken(in, line);
+		}
+	}
+
+	return status;
+}
+
+// DeclBlock ::= VAR {DeclStmt;}
+bool DeclBlock(istream& in, int& line){
+
+}
+
+// DeclStmt ::= Ident {, Ident} : (Integer | Real | String)
+bool DeclStmt(istream& in, int& line){
+	bool status = false;
+
+	LexItem tok = Parser::GetNextToken(in, line);
+
+	if(tok.GetToken() == INTEGER || tok.GetToken() == REAL || tok.GetToken() == STRING){
+		status = ExprList(in, line);
+
+		if (!status){
+			ParseError(line, "(DeclStmt) Problem in DeclStmt");
+			return status;
+		}
+	}
+
+	else{
+		Parser::PushBackToken(tok);
+		ParseError(line, "(DeclStmt) invalid type");
+		return status;  // should be false if made it here
+	}
+	// made through first if, skipped second, should be true
+	return status;
+}
+
+// ProgBody ::= BEGIN {Stmt;} END
+bool ProgBody(istream& in, int& line){
+
+}
+
+// IfStmt ::= IF ( LogicExpr ) THEN Stmt [ELSE Stmt]
+bool IfStmt(istream& in, int& line){
+
+}
+
+// ForStmt ::= FOR Var := ICONST (TO | DOWNTO) ICONST DO Stmt
+bool ForStmt(istream& in, int& line){
+
+}
+
+// AssignStmt ::= Var := Expr
+bool AssignStmt(istream& in, int& line){
+	bool status = false;
+	bool variable_status = false;
+	variable_status = Var(in, line);
+	LexItem tok = Parser::GetNextToken(in, line);
+
+	if (variable_status){
+		if (tok.GetToken() == ASSOP){
+			// call Expr?
+		}
+	}
+}
+
+// Var ::= IDENT
+bool Var(istream& in, int& line){
+	bool status = false;
+	string lexeme = "";
+	LexItem tok = Parser::GetNextToken(in, line);
+
+	if (tok.GetToken() == IDENT){
+		lexeme = tok.GetLexeme();
+
+		if (!(defVar.find(lexeme)->second)){  // not defined
+			ParseError(line, "(Var) Undefined variable");
+			return status;
+		}
+		else{  // variable is defined
+			status = true;
+		}
+	}
+	else if (tok.GetToken() == ERR){
+		ParseError(line, "(Var) Invalid statement");
+		return status;
+	}
+	return status;
+}
+
+// LogicExpr ::= Expr (= | > | <) Expr
+bool LogicExpr(istream& in, int& line){
+
+}
+
+// Expr ::= Term {(+|-) Term}
+bool Expr(istream& in, int& line){
+	bool status = false;
+	// status = Term()?
+}
+
+// Term ::= SFactor {( * | / ) SFactor}
+bool Term(istream& in, int& line){
+	bool status = false;
+	// status = SFactor()?
+}
+
+// SFactor ::= [(+ | -)] Factor
+bool SFactor(istream& in, int& line){
+	bool status = false;
+	// status = Factor()?
+	LexItem tok = Parser::GetNextToken(in, line);
+}
+
+// Factor ::= IDENT | ICONST | RCONST | SCONST | (Expr)
+bool Factor(istream& in, int& line, int sign){
+	bool status = false;
+	LexItem tok = Parser::GetNextToken(in, line);
+	if (tok.GetToken() == IDENT){
+		
+	}
+}

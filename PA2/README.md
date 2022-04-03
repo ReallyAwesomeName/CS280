@@ -1,4 +1,4 @@
-# CS 280: PA2
+# CS 280: PA2 Building a Parser for the PLSL
 
 Spring 2022\
 Programming Assignment 2\
