@@ -1,0 +1,59 @@
+ASSIGNMENT=prog2
+
+ex=~/$ASSIGNMENT
+
+cd $LIB/public/PA_Spring2022/PA2Parser
+
+[ ! -e $ex ] && echo Cannot find the program, please build it! && exit 1
+ 
+ofile=`mktemp`
+
+cases=("" "testprog1"  "testprog2" "testprog3" "testprog4" "testprog5" "testprog6" "testprog7" "testprog8" "testprog9" "testprog10" "testprog11" "testprog12" "testprog13" "testprog14" "testprog15" "testprog16" "testprog17" "testprog18" "testprog19" "testprog20"  "testprog21" "testprog22" "testprog23")
+
+flags=("" "testprog1" "testprog2" "testprog3" "testprog4" "testprog5" "testprog6" "testprog7" "testprog8" "testprog9" "testprog10" "testprog11" "testprog12" "testprog13" "testprog14" "testprog15" "testprog16" "testprog17" "testprog18" "testprog19" "testprog20"  "testprog21" "testprog22" "testprog23")
+
+  
+
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23;
+do
+	score=0
+    echo RUNNING ${flags[i]}
+    eval $LIB/public/wrapcase.pl -- "bash -c \"$ex ${flags[$i]} 2>&1\"" | tee $ofile
+
+    ## for setup ## cp $ofile files$i.correct
+    rc1=0
+    rc2=0
+    if [ $i -eq 19 ]
+    then
+       diff $ofile ${flags[$i]}.correct
+       rc1=$?              
+    else 
+       errs=$(egrep '[0-9]+: .*' $ofile | wc -l)
+       egrep "Number of Syntax Errors $errs" $ofile 
+       rc1=$?
+       lineno=$(egrep '[0-9]+:' $ofile)
+       egrep "$lineno" ${flags[$i]}.correct
+       rc2=$?            
+    fi
+
+    if (( $i >= 3 && $i <= 6 || $i >= 20 ))
+    then
+        [ $rc1 -eq 0 -a $rc2 -eq 0 ] && score=0.5
+
+        echo RESULT: ${cases[i]}  "[ " $score " / 0.5 ]"
+        echo "-----------------------------------------------------"
+    else
+        [ $rc1 -eq 0 -a $i -eq 19 ] && score=1
+        
+       [ $rc1 -eq 0 -a $rc2 -eq 0 -a $i -ne 19 ] && score=1
+
+        echo RESULT: ${cases[i]}  "[ " $score " / 1 ]"
+        echo "-----------------------------------------------------"
+    fi
+
+    
+
+    rm $ofile
+done
+
+exit $score
