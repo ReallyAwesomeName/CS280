@@ -113,7 +113,7 @@ bool WriteLnStmt(istream& in, int& line) {
 	//Evaluate: print out the list of expressions values
 
 	return ex;
-}
+} // end of WriteLnStmt
 
 
 // ExprList ::= Expr {, Expr}
@@ -143,10 +143,11 @@ bool ExprList(istream& in, int& line) {
 		return true;
 	}
 	return status;
-}
+} // end of ExprList
 
 // Prog ::= PROGRAM IDENT; DeclBlock ProgBody
 bool Prog(istream& in, int& line){
+	// TODO: NOT DONE
 	bool status = false;
 	LexItem tok = Parser::GetNextToken(in, line);
 
@@ -176,12 +177,13 @@ bool Prog(istream& in, int& line){
 	}
 
 	return status;
-}
+} // end of Prog
 
 // DeclBlock ::= VAR {DeclStmt;}
 bool DeclBlock(istream& in, int& line){
 	bool status = false;
-}
+	return status;
+} // end of DeclBlock
 
 // DeclStmt ::= Ident {, Ident} : (Integer | Real | String)
 bool DeclStmt(istream& in, int& line){
@@ -194,7 +196,6 @@ bool DeclStmt(istream& in, int& line){
 		status = ExprList(in, line);
 
 		if (status){
-			//TODO: WORK ON THIS, add to defVar here?
 			tok = Parser::GetNextToken(in, line);
 			if (tok.GetToken() == IDENT){
 				// check if already in defVar
@@ -202,6 +203,29 @@ bool DeclStmt(istream& in, int& line){
 					ParseError(line, "Variable Redefinition");
 					return false;
 				}
+				else{
+					// record new variable
+					defVar.insert(pair<string, bool> (tok.GetLexeme(), true));
+					SymTable.insert(pair<string, Token> (tok.GetLexeme(), tok.GetToken()));
+				}
+				// check if declaring multiple variables
+				tok = Parser::GetNextToken(in, line);
+				if (tok.GetToken() == COMMA){
+					// start again for next variable after comma
+					status = DeclStmt(in, line);
+					if (!status){
+						ParseError(line, "(DeclStmt) missing identifier after a comma");
+						return status;
+					}
+				}
+				else{
+					Parser::PushBackToken(tok);
+					return true;
+				}
+			}
+			else{
+				ParseError(line, "(DeclStmt) missing declaration");
+				return false;
 			}
 		}
 
@@ -218,22 +242,25 @@ bool DeclStmt(istream& in, int& line){
 	}
 	// made through first if, skipped second, should be true
 	return status;
-}
+} // end of DeclStmt
 
 // ProgBody ::= BEGIN {Stmt;} END
 bool ProgBody(istream& in, int& line){
 	bool status = false;
-}
+	return status;
+} // end of ProgBody
 
 // IfStmt ::= IF ( LogicExpr ) THEN Stmt [ELSE Stmt]
 bool IfStmt(istream& in, int& line){
 	bool status = false;
-}
+	return status;
+} // end of IfStmt
 
 // ForStmt ::= FOR Var := ICONST (TO | DOWNTO) ICONST DO Stmt
 bool ForStmt(istream& in, int& line){
 	bool status = false;
-}
+	return status;
+} // end of ForStmt
 
 // AssignStmt ::= Var := Expr
 bool AssignStmt(istream& in, int& line){
@@ -244,10 +271,13 @@ bool AssignStmt(istream& in, int& line){
 
 	if (variable_status){
 		if (tok.GetToken() == ASSOP){
+			// FIXME: temp return
+			return status;
 			// call Expr?
 		}
 	}
-}
+	return status;
+} // end of AssignStmt
 
 // Var ::= IDENT
 bool Var(istream& in, int& line){
@@ -272,18 +302,20 @@ bool Var(istream& in, int& line){
 		return false;
 	}
 	return status;
-}
+} // end of Var
 
 // LogicExpr ::= Expr (= | > | <) Expr
 bool LogicExpr(istream& in, int& line){
 	bool status = false;
-}
+	return status;
+} // end of LogicExpr
 
 // Expr ::= Term {(+|-) Term}
 bool Expr(istream& in, int& line){
 	bool status = false;
+	return status;
 	// status = Term()?
-}
+} // end of Expr
 
 // Term ::= SFactor {( * | / ) SFactor}
 bool Term(istream& in, int& line){
@@ -301,8 +333,8 @@ bool Term(istream& in, int& line){
 		cout << "(" << tok.GetLexeme() << ")" << endl;
 		return false;
 	}
-
-}
+	return status;
+} // end of Term
 
 // SFactor ::= [(+ | -)] Factor
 bool SFactor(istream& in, int& line){
@@ -322,7 +354,7 @@ bool SFactor(istream& in, int& line){
 	// get status with sign
 	status = Factor(in, line, sign);
 	return status;
-}
+} // end of SFactor
 
 // Factor ::= IDENT | ICONST | RCONST | SCONST | (Expr)
 bool Factor(istream& in, int& line, int sign){  // what do with sign?
@@ -366,4 +398,4 @@ bool Factor(istream& in, int& line, int sign){  // what do with sign?
 	// some strange error if made it here
 	ParseError(line, "(Factor) Invalid something");
 	return status;
-}
+} // end of Factor
