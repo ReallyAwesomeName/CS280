@@ -9,11 +9,10 @@
 
 #include "lex.h"
 #include "parse.h"
-//#include "parse.cpp"
+
 
 using namespace std;
 
-//extern int error_count;
 
 
 int main(int argc, char *argv[])

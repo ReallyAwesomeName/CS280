@@ -15,22 +15,22 @@ using namespace std;
 
 
 
-extern bool Prog(istream& in, int& line);//done
-extern bool DeclBlock(istream& in, int& line);//done
-extern bool DeclStmt(istream& in, int& line);//done
-extern bool ProgBody(istream& in, int& line);//done
-extern bool Stmt(istream& in, int& line);//done
-extern bool WriteLnStmt(istream& in, int& line);//done
-extern bool IfStmt(istream& in, int& line);//done
-extern bool ForStmt(istream& in, int& line);//done
-extern bool AssignStmt(istream& in, int& line);//done
-extern bool Var(istream& in, int& line);//done
-extern bool ExprList(istream& in, int& line);//done
-extern bool LogicExpr(istream& in, int& line);//done
-extern bool Expr(istream& in, int& line);//done
-extern bool Term(istream& in, int& line);//done
-extern bool SFactor(istream& in, int& line);//done
-extern bool Factor(istream& in, int& line, int sign);//done
+extern bool Prog(istream& in, int& line);
+extern bool DeclBlock(istream& in, int& line);
+extern bool DeclStmt(istream& in, int& line);
+extern bool ProgBody(istream& in, int& line);
+extern bool Stmt(istream& in, int& line);
+extern bool WriteLnStmt(istream& in, int& line);
+extern bool IfStmt(istream& in, int& line);
+extern bool ForStmt(istream& in, int& line);
+extern bool AssignStmt(istream& in, int& line);
+extern bool Var(istream& in, int& line);
+extern bool ExprList(istream& in, int& line);
+extern bool LogicExpr(istream& in, int& line);
+extern bool Expr(istream& in, int& line);
+extern bool Term(istream& in, int& line);
+extern bool SFactor(istream& in, int& line);
+extern bool Factor(istream& in, int& line, int sign);
 extern int ErrCount();
 
 #endif /* PARSE_H_ */

@@ -165,14 +165,14 @@ bool Prog(istream& in, int& line){
 	// program start
 	if (tok.GetToken() == PROGRAM){
 		// get what's after PROGRAM
-		// go into ProgBody()?
+		// TODO: go into ProgBody()?
 		tok = Parser::GetNextToken(in, line);
 
 		if (tok.GetToken() == IDENT){
 			status = DeclBlock(in, line);
-
-			// go on
-			tok = Parser::GetNextToken(in, line);
+		}
+		if (tok.GetToken() == END && (error_count = 0)){
+			return true;
 		}
 	}
 
