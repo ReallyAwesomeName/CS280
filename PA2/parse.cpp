@@ -10,6 +10,8 @@
 map<string, bool> defVar;
 map<string, Token> SymTable;
 
+
+
 namespace Parser {
 	bool pushed_back = false;
 	LexItem	pushed_token;
@@ -27,7 +29,7 @@ namespace Parser {
 			abort();
 		}
 		pushed_back = true;
-		pushed_token = t;	
+		pushed_token = t;
 	}
 
 }
@@ -48,6 +50,7 @@ void ParseError(int line, string msg)
 
 //Stmt is either a WriteLnStmt, ForepeatStmt, IfStmt, or AssigStmt
 // Stmt ::= AssigStmt | IfStmt | WriteLnStmt | ForStmt
+// TODO: Done?
 bool Stmt(istream& in, int& line) {
 	bool status;
 	//cout << "in ContrlStmt" << endl;
@@ -86,6 +89,7 @@ bool Stmt(istream& in, int& line) {
 
 
 // WriteLnStmt ::= WRITELN (ExprList)
+// TODO: Done?
 bool WriteLnStmt(istream& in, int& line) {
 	LexItem t;
 	//cout << "in WriteStmt" << endl;
@@ -117,6 +121,7 @@ bool WriteLnStmt(istream& in, int& line) {
 
 
 // ExprList ::= Expr {, Expr}
+// TODO: Done?
 bool ExprList(istream& in, int& line) {
 	bool status = false;
 	//cout << "in ExprList and before calling Expr" << endl;
@@ -145,49 +150,123 @@ bool ExprList(istream& in, int& line) {
 	return status;
 } // end of ExprList
 
+// Expr ::= Term {(+|-) Term}
+// TODO: Done?
+bool Expr(istream& in, int& line){
+	bool status;
+	LexItem tok;
+	cout << "before Term" << endl;
+	status = Term(in, line);
+	if (!status){
+		return status;
+	}
+	tok = Parser::GetNextToken(in, line);
+	if(tok.GetToken() == ERR){
+		ParseError(line, "(Expr) invalid input");
+		cout << "(" << tok.GetLexeme() << ")" << endl;
+		return false;
+	}
+	while (tok.GetToken() == PLUS || tok.GetToken() || MINUS){
+		status = Term(in, line); // this is the next one
+		if(!status){
+			ParseError(line, "(Expr) missing RHS");
+			cout << "(" << tok.GetLexeme() << ")" << endl;
+			return status;
+		}
+	}
+	Parser::PushBackToken(tok);  // extra token from while loop
+
+	return status;
+} // end of Expr
+
 // Prog ::= PROGRAM IDENT; DeclBlock ProgBody
+// FIXME: FINISH THIS
 bool Prog(istream& in, int& line){
-	// TODO: NOT DONE
 	bool status = false;
 	LexItem tok = Parser::GetNextToken(in, line);
 
+	// program start
+	if (tok.GetToken() == PROGRAM){
+		// get what's after PROGRAM
+		while(tok.GetToken() != END){
+			if (tok.GetToken() == VAR){
+				status = DeclBlock(in, line);
+			}
+			//move on
+			tok = Parser::GetNextToken(in, line);
+
+			if (tok.GetToken() == BEGIN){
+				cout << "before enter ProgBody: tok " << tok.GetLexeme() << endl;
+				status = ProgBody(in, line);
+			}
+			if (tok.GetToken() == END && (error_count = 0)){
+				return true;
+			}
+		}
+		// cout << "end? " << tok.GetLexeme() << endl;
+	}
+	else if (tok.GetToken() != PROGRAM){
+		ParseError(line, "Missing PROGRAM.");
+		return false;
+	}
 	if (tok.GetToken() == ERR){
 		ParseError(line, "(Prog) Unrecognized Input Pattern");
 		cout << "(" << tok.GetLexeme() << ")" << endl;
 		return false;
 	}
-
 	if (error_count > 0){
 		ParseError(line, "(Prog) Invalid statements");
-		return status;
+		return false;
 	}
-
-	// program start
-	if (tok.GetToken() == PROGRAM){
-		// get what's after PROGRAM
-		// TODO: go into ProgBody()?
-		tok = Parser::GetNextToken(in, line);
-
-		if (tok.GetToken() == IDENT){
-			status = DeclBlock(in, line);
-		}
-		if (tok.GetToken() == END && (error_count = 0)){
-			return true;
-		}
-	}
-
 	return status;
 } // end of Prog
 
-// DeclBlock ::= VAR {DeclStmt;}
-bool DeclBlock(istream& in, int& line){
+// ProgBody ::= BEGIN {Stmt;} END
+// FIXME: FINISH THIS
+bool ProgBody(istream& in, int& line){
 	bool status = false;
+	LexItem tok = Parser::GetNextToken(in, line);
+	if (defVar.find(tok.GetLexeme())->second){
+		cout << "before AssignStmt tok " << tok.GetLexeme() << endl;
+		Parser::PushBackToken(tok);
+		AssignStmt(in, line);
+	}
+	cout << "before Stmt " << endl;
+	status = Stmt(in, line);
+
+	return status;
+} // end of ProgBody
+
+// DeclBlock ::= VAR {DeclStmt;}
+// FIXME: FINISH THIS
+bool DeclBlock(istream& in, int& line){
+	bool status;
+	status = false;
+	LexItem tok = Parser::GetNextToken(in, line);
+	while (tok.GetToken() != BEGIN && tok.GetToken() != ASSOP){
+		if (tok.GetToken() == IDENT){
+			cout << "IDENT " << tok.GetLexeme() << endl;
+			if (defVar.find(tok.GetLexeme())->second){
+				ParseError(line, "(DeclBlock) Variable Redeclaration");
+				return false;
+			}
+			else{
+				defVar.insert(pair<string, bool> (tok.GetLexeme(), true));
+				SymTable.insert(pair<string, Token> (tok.GetLexeme(), tok.GetToken()));
+			}
+		}
+		// get next
+		tok = Parser::GetNextToken(in, line);
+	}
+	Parser::PushBackToken(tok);
 	return status;
 } // end of DeclBlock
 
 // DeclStmt ::= Ident {, Ident} : (Integer | Real | String)
+// TODO: Done?
 bool DeclStmt(istream& in, int& line){
-	bool status = false;
+	bool status;
+	status = false;
 
 	LexItem tok = Parser::GetNextToken(in, line);
 
@@ -197,10 +276,11 @@ bool DeclStmt(istream& in, int& line){
 
 		if (status){
 			tok = Parser::GetNextToken(in, line);
+			// check for definition in DeclStmt
 			if (tok.GetToken() == IDENT){
 				// check if already in defVar
 				if (defVar.find(tok.GetLexeme())->second){
-					ParseError(line, "Variable Redefinition");
+					ParseError(line, "(DeclStmt) Variable Redefinition");
 					return false;
 				}
 				else{
@@ -230,7 +310,7 @@ bool DeclStmt(istream& in, int& line){
 		}
 
 		if (!status){
-			ParseError(line, "(DeclStmt) Problem calling ExprList()");
+			ParseError(line, "(DeclStmt) ExprList() returned false");
 			return status;
 		}
 	}
@@ -244,55 +324,97 @@ bool DeclStmt(istream& in, int& line){
 	return status;
 } // end of DeclStmt
 
-// ProgBody ::= BEGIN {Stmt;} END
-bool ProgBody(istream& in, int& line){
-	bool status = false;
-	return status;
-} // end of ProgBody
-
 // IfStmt ::= IF ( LogicExpr ) THEN Stmt [ELSE Stmt]
+// TODO: Done?
 bool IfStmt(istream& in, int& line){
 	bool status = false;
-	return status;
+	LexItem tok = Parser::GetNextToken(in, line);
+	// check for LPAREN
+	if (tok.GetToken() != LPAREN){
+		ParseError(line, "(IfStmt) missing LPAREN");
+		return status;
+	}
+	// LPAREN is there, check LogicExpr
+	status = LogicExpr(in, line);
+	if (!status){
+		ParseError(line, "(IfStmt) LogicExpr returned false");
+		return status;
+	}
+	// get next
+	tok = Parser::GetNextToken(in, line);
+	// check for RPAREN
+	if (tok.GetToken() != RPAREN){
+		ParseError(line, "(IfStmt) missing RPAREN");
+		return false;
+	}
+	// check the stmt
+	status = Stmt(in, line);
+	if (!status){
+		ParseError(line, "(IfStmt) missing Stmt");
+		return status;
+	}
+	return true;
 } // end of IfStmt
 
 // ForStmt ::= FOR Var := ICONST (TO | DOWNTO) ICONST DO Stmt
+// FIXME: FINISH THIS
 bool ForStmt(istream& in, int& line){
 	bool status = false;
 	return status;
 } // end of ForStmt
 
 // AssignStmt ::= Var := Expr
+// TODO: Done?
 bool AssignStmt(istream& in, int& line){
 	bool status = false;
 	bool variable_status = false;
 	variable_status = Var(in, line);
 	LexItem tok = Parser::GetNextToken(in, line);
-
+	cout << "in AssignStmt " << tok.GetLexeme() << endl;
 	if (variable_status){
+		tok = Parser::GetNextToken(in, line);
 		if (tok.GetToken() == ASSOP){
-			// FIXME: temp return
+			status = Expr(in, line);
+			if(!status){
+				ParseError(line, "(AssignStmt) Expr returned false in AssignStmt");
+				return status;
+			}
+		}
+		else if (tok.GetToken() == ERR){
+			ParseError(line, "(AssignStmt) invalid input");
+			cout << "(" << tok.GetLexeme() << ")" << endl;
+			return false;
+		}
+		else{
+			ParseError(line, "(AssignStmt) missing :=");
 			return status;
-			// call Expr?
 		}
 	}
-	return status;
+	else if (!variable_status){
+		ParseError(line, "(AssignStmt) missing LHS (Var() returned false)");
+		return false;
+	}
+	return true;
 } // end of AssignStmt
 
 // Var ::= IDENT
+// TODO: Done?
 bool Var(istream& in, int& line){
-	bool status = false;
+	bool status;
+	status = false;
 	string lexeme = "";
 	LexItem tok = Parser::GetNextToken(in, line);
-
+	cout << "in var: tok " << tok.GetLexeme() << endl;
 	if (tok.GetToken() == IDENT){
+		cout << "in var IDENT" << endl;
 		lexeme = tok.GetLexeme();
 
-		if (!(defVar.find(lexeme)->second)){  // not defined
-			ParseError(line, "(Var) Undefined variable");
-			return status;
+		if (!(defVar.find(lexeme)->second)){  // not declared
+			ParseError(line, "(Var) Undeclared variable");
+			return false;
 		}
-		else{  // variable is defined
+		else{  // variable is declared
+			Parser::PushBackToken(tok);
 			status = true;
 		}
 	}
@@ -305,27 +427,40 @@ bool Var(istream& in, int& line){
 } // end of Var
 
 // LogicExpr ::= Expr (= | > | <) Expr
+// TODO: Done?
 bool LogicExpr(istream& in, int& line){
 	bool status = false;
+	status = Expr(in, line);
+	if (!status){
+		return status;
+	}
+	LexItem tok = Parser::GetNextToken(in, line);
+	if(tok.GetToken() == ERR){
+		ParseError(line, "(LogicExpr) invalid input");
+		cout << "(" << tok.GetLexeme() << ")" << endl;
+		return false;
+	}
+	else if (tok.GetToken() == EQUAL || tok.GetToken() == GTHAN || tok.GetToken() == LTHAN){
+		status = Expr(in, line);
+		if (!status){
+			ParseError(line, "(LogicExpr) missing RHS");
+			return status;
+		}
+	}
 	return status;
 } // end of LogicExpr
 
-// Expr ::= Term {(+|-) Term}
-bool Expr(istream& in, int& line){
-	bool status = false;
-	return status;
-	// status = Term()?
-} // end of Expr
 
 // Term ::= SFactor {( * | / ) SFactor}
+// TODO: Done?
 bool Term(istream& in, int& line){
 	bool status = false;
+	cout << "before SFactor" << endl;
 	status = SFactor(in, line);
 
 	if (!status){  // SFactor returned false
 		return status;
 	}
-
 	// SFactor returned true, go on
 	LexItem tok = Parser::GetNextToken(in, line);
 	if (tok.GetToken() == ERR){
@@ -333,10 +468,27 @@ bool Term(istream& in, int& line){
 		cout << "(" << tok.GetLexeme() << ")" << endl;
 		return false;
 	}
+	while (tok.GetToken() == MULT || tok.GetToken() == DIV){
+		status = SFactor(in, line);
+		if (!status){
+			ParseError(line, "(Term) missing RHS of operator");
+			return status;
+		}
+		// check next
+		tok = Parser::GetNextToken(in, line);
+		if (tok.GetToken() == ERR){
+			ParseError(line, "(Term) Invalid expression");
+			cout << "(" << tok.GetLexeme() << ")" << endl;
+			return false;
+		}
+	}
+	// checked extra in while so pushback
+	Parser::PushBackToken(tok);
 	return status;
 } // end of Term
 
 // SFactor ::= [(+ | -)] Factor
+// TODO: Done?
 bool SFactor(istream& in, int& line){
 	bool status = false;
 	int sign = 0;
@@ -352,14 +504,18 @@ bool SFactor(istream& in, int& line){
 		Parser::PushBackToken(tok);
 	}
 	// get status with sign
+	cout << "before Factor: tok " << tok.GetLexeme() << endl;
 	status = Factor(in, line, sign);
 	return status;
 } // end of SFactor
 
 // Factor ::= IDENT | ICONST | RCONST | SCONST | (Expr)
+// TODO: Done?
 bool Factor(istream& in, int& line, int sign){  // what do with sign?
-	bool status = false;
-	LexItem tok = Parser::GetNextToken(in, line);
+	bool status;
+	LexItem tok;
+	status = false;
+	tok = Parser::GetNextToken(in, line);
 	string lexeme = tok.GetLexeme();
 
 	if (tok.GetToken() == IDENT){
@@ -372,7 +528,7 @@ bool Factor(istream& in, int& line, int sign){  // what do with sign?
 		}
 	}
 	else if (tok.GetToken() == ICONST || tok.GetToken() == RCONST || tok.GetToken() == SCONST){
-		status = true;
+		return status = true;
 	}
 	else if (tok.GetToken() == LPAREN){
 		bool expr_status = Expr(in, line);
@@ -397,5 +553,6 @@ bool Factor(istream& in, int& line, int sign){  // what do with sign?
 	}
 	// some strange error if made it here
 	ParseError(line, "(Factor) Invalid something");
+	cout << "(" << tok.GetLexeme() << ")" << endl;
 	return status;
 } // end of Factor
