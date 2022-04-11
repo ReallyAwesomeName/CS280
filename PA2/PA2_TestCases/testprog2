@@ -1,6 +1,6 @@
 PROGRAM circle;
 VAR
-	(*Variable redefinition*0
+	(*Variable redefinition*)
 	(*Variable declarations*)
 	r, a, p, b : REAL; 
 	i, j, r : INTEGER;	
