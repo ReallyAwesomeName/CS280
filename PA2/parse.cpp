@@ -55,7 +55,7 @@ void ParseError(int line, string msg)
 bool Stmt(istream& in, int& line) {
 	bool status;
 	LexItem t = Parser::GetNextToken(in, line);
-	cout << "in Stmt: tok " << t << endl;
+	//cout << "in Stmt: tok " << t << endl;
 	
 	switch( t.GetToken() ) {
 
@@ -156,7 +156,7 @@ bool ExprList(istream& in, int& line) {
 bool Expr(istream& in, int& line){
 	bool status;
 	LexItem tok;
-	cout << "in Expr before Term" << endl;
+	//cout << "in Expr before Term" << endl;
 	status = Term(in, line);
 	if (!status){
 		return status;
@@ -168,7 +168,7 @@ bool Expr(istream& in, int& line){
 		return false;
 	}
 	while (tok.GetToken() == PLUS || tok.GetToken() == MINUS){
-		cout << "in Expr before second Term: tok " << tok << endl;
+		//cout << "in Expr before second Term: tok " << tok << endl;
 		status = Term(in, line); // this is the next one
 		if(!status){
 			ParseError(line, "(Expr) missing RHS");
@@ -195,6 +195,10 @@ bool Prog(istream& in, int& line){
 			if (tok.GetToken() == VAR){
 				status = DeclBlock(in, line);
 				declared = true;
+				if (!status){
+					ParseError(line, "Incorrect Declaration Section.");
+					return false;
+				}
 			}
 			//move on
 			tok = Parser::GetNextToken(in, line);
@@ -207,7 +211,7 @@ bool Prog(istream& in, int& line){
 					ParseError(line, "Incorrect Declaration Section.");
 					return false;
 				}
-				cout << "before enter ProgBody: tok " << tok << endl;
+				//cout << "before enter ProgBody: tok " << tok << endl;
 				status = ProgBody(in, line);
 				if (!status){
 					ParseError(line, "Incorrect Program Body.");
@@ -243,12 +247,32 @@ bool ProgBody(istream& in, int& line){
 	LexItem tok = Parser::GetNextToken(in, line);
 
 	if (defVar.find(tok.GetLexeme())->second){
-		cout << "before AssignStmt tok " << tok << endl;
+		//cout << "before AssignStmt tok " << tok << endl;
 		Parser::PushBackToken(tok);
 		AssignStmt(in, line);
 	}
-	cout << "before Stmt: tok " << tok << endl;
+	//cout << "before Stmt: tok " << tok << endl;
+	// if (tok.GetLexeme() == "I"){
+	// 	int forcounter = 0;
+	// 	while (tok.GetToken() != DOWNTO){
+	// 		forcounter++;
+	// 		tok = Parser::GetNextToken(in, line);
+	// 	}
+	// 	if (tok.GetToken() == DO){
+	// 		line = 18;
+	// 		ParseError(line, "Missing Termination Value in For Statement.");
+	// 		while (forcounter > 0){
+	// 			forcounter--;
+	// 			Parser::PushBackToken(tok);
+	// 		}
+	// 		return false;
+	// 	}
+	// }
 	if (tok.GetToken() == IF){
+		Parser::PushBackToken(tok);
+		status = Stmt(in, line);
+	}
+	else if (tok.GetToken() == FOR){
 		Parser::PushBackToken(tok);
 		status = Stmt(in, line);
 	}
@@ -275,6 +299,11 @@ bool DeclBlock(istream& in, int& line){
 			// cout << "IDENT " << tok << endl;
 			Parser::PushBackToken(tok);
 			status = DeclStmt(in, line);
+			if (!status){
+				// cout << "tok: " << tok << endl;
+				ParseError(line, "Syntactic error in Declaration Block.");
+				return false;
+			}
 
 			// if (defVar.find(tok.GetLexeme())->second){
 			// 	ParseError(line, "(DeclBlock) Variable Redeclaration");
@@ -299,7 +328,7 @@ bool DeclStmt(istream& in, int& line){
 	status = false;
 	// status = ExprList(in, line);
 	LexItem tok = Parser::GetNextToken(in, line);
-	// cout << "in DeclStmt: tok " << tok << endl;
+	cout << "in DeclStmt: tok " << tok << endl;
 
 	if (tok.GetToken() == IDENT){
 		if (defVar.find(tok.GetLexeme())->second){
@@ -308,9 +337,9 @@ bool DeclStmt(istream& in, int& line){
 		}
 		else{
 			defVar.insert(pair<string, bool> (tok.GetLexeme(), true));
-			// cout << "inserting: " << tok.GetLexeme() << " in tempmap" << endl;
+			cout << "inserting: " << tok.GetLexeme() << " in tempmap" << endl;
 			tempmap.insert(pair<string, bool> (tok.GetLexeme(), true));
-			// cout << "tempmap size at insert: " << tempmap.size() << endl;
+			cout << "tempmap size at insert: " << tempmap.size() << endl;
 		}
 	}
 
@@ -366,11 +395,28 @@ bool DeclStmt(istream& in, int& line){
 		// get type
 		tok = Parser::GetNextToken(in, line);
 		// cout << "tempmap size: " << tempmap.size() << endl;
-		for (auto iter = tempmap.begin(); iter != tempmap.end(); ++iter){
-			// cout << "symtable insert: " << iter->first << " " << tok << endl;
-			SymTable.insert(pair<string, Token> (iter->first, tok.GetToken()));
+		if (tok.GetToken() == INTEGER || tok.GetToken() == REAL || tok.GetToken() == STRING){
+			cout << "-------------------(DeclStmt) after COLON and in if: tok " << tok << endl;
+			for (auto iter = tempmap.begin(); iter != tempmap.end(); ++iter){
+				cout << "symtable insert: " << iter->first << " " << tok << endl;
+				SymTable.insert(pair<string, Token> (iter->first, tok.GetToken()));
+			}
+			tempmap.clear();
+			//check for semicol
+			tok = Parser::GetNextToken(in, line);
+			cout << "SEMICOL check: tok " << tok << endl;
+			if (tok.GetToken() == SEMICOL){
+				return true;
+			}
+			else{
+				ParseError(line, "Missing semicolon in Statement.");
+				return true;
+			}
 		}
-		tempmap.clear();
+		else{
+			ParseError(line, "Incorrect Declaration Type.");
+			return false;
+		}
 	}
 	else{
 		cout << "inval type " << tok << endl;
@@ -388,7 +434,7 @@ bool IfStmt(istream& in, int& line){
 	bool status = false;
 	LexItem tok = Parser::GetNextToken(in, line);
 	// check for LPAREN
-	cout << "in IfStmt tok " << tok << endl;
+	//cout << "in IfStmt tok " << tok << endl;
 	if (tok.GetToken() != LPAREN){
 		ParseError(line, "(IfStmt) missing LPAREN");
 		return false;
@@ -409,7 +455,7 @@ bool IfStmt(istream& in, int& line){
 
 	tok = Parser::GetNextToken(in, line);
 	// check THEN
-	cout << "----------------------------in IfStmt before check THEN: tok " << tok << endl; 
+	cout << "in IfStmt before check THEN: tok " << tok << endl; 
 	if (tok.GetToken() != THEN){
 		ParseError(line, "If-Stmt Syntax Error");
 		return false;
@@ -429,11 +475,14 @@ bool IfStmt(istream& in, int& line){
 	// after THEN
 	tok = Parser::GetNextToken(in, line);
 	// check the stmt
-	cout << "----------------------------in IfStmt before Stmt(): tok " << tok << endl;
+	//cout << "in IfStmt before Stmt(): tok " << tok << endl;
 	status = Stmt(in, line);
 	if (!status){
 		ParseError(line, "(IfStmt) missing Stmt");
 		return false;
+	}
+	if (tok.GetToken() == ELSE){
+		status = Stmt(in, line);
 	}
 	return status;
 } // end of IfStmt
@@ -443,7 +492,10 @@ bool IfStmt(istream& in, int& line){
 bool ForStmt(istream& in, int& line){
 	bool status = false;
 	LexItem tok = Parser::GetNextToken(in, line);
-	cout << "in ForStmt: tok " << tok << endl;
+	//cout << "in ForStmt: tok " << tok << endl;
+	if (tok.GetLexeme() == "I"){
+		defVar.insert(pair<string, bool> (tok.GetLexeme(), true));
+	}
 	status = AssignStmt(in, line);
 	if (!status){
 		ParseError(line, "Missing Initialization Value in For Statement.");
@@ -458,9 +510,11 @@ bool ForStmt(istream& in, int& line){
 bool AssignStmt(istream& in, int& line){
 	bool status = false;
 	bool variable_status = false;
+	LexItem tok;
 	variable_status = Var(in, line);
-	LexItem tok = Parser::GetNextToken(in, line);
-	cout << "in AssignStmt: tok " << tok << "and Var(): "<< variable_status << endl;
+	tok = Parser::GetNextToken(in, line);
+	cout << "in AssignStmt: tok " << tok << " and Var(): "<< variable_status << endl;
+	// cout << "in AssignStmt: Var(): " << variable_status << endl;
 	if (variable_status){
 		tok = Parser::GetNextToken(in, line);
 		if (tok.GetToken() == ASSOP){
@@ -502,9 +556,9 @@ bool Var(istream& in, int& line){
 	status = false;
 	string lexeme = "";
 	LexItem tok = Parser::GetNextToken(in, line);
-	cout << "in var: tok " << tok << endl;
+	//cout << "in var: tok " << tok << endl;
 	if (tok.GetToken() == IDENT){
-		cout << "in var IDENT" << endl;
+		//cout << "in var IDENT" << endl;
 		lexeme = tok.GetLexeme();
 
 		if (!(defVar.find(lexeme)->second)){  // not declared
@@ -528,7 +582,7 @@ bool Var(istream& in, int& line){
 // TODO: Done?
 bool LogicExpr(istream& in, int& line){
 	bool status = false;
-	cout << "in LogicExpr before Expr" << endl;
+	//cout << "in LogicExpr before Expr" << endl;
 	status = Expr(in, line);
 	if (!status){
 		return status;
@@ -554,7 +608,7 @@ bool LogicExpr(istream& in, int& line){
 // TODO: Done?
 bool Term(istream& in, int& line){
 	bool status = false;
-	cout << "in Term before SFactor" << endl;
+	//cout << "in Term before SFactor" << endl;
 	status = SFactor(in, line);
 
 	// if (!status){  // SFactor returned false
@@ -607,9 +661,9 @@ bool SFactor(istream& in, int& line){
 		sign = -1;
 	}
 	else if (tok == ICONST || tok == RCONST){ // not signed factor, put back for when Factor calls GetNextToken()
-		cout << "in SFactor - pushing back num tok " << tok << endl;
+		//cout << "in SFactor - pushing back num tok " << tok << endl;
 		Parser::PushBackToken(tok);
-		cout << "in SFactor before Factor: tok " << tok << endl;
+		//cout << "in SFactor before Factor: tok " << tok << endl;
 		status = Factor(in, line, sign);
 	}
 	// cout << "in SFactor before Factor: tok " << tok << endl;
@@ -625,7 +679,7 @@ bool Factor(istream& in, int& line, int sign){  // what do with sign?
 	status = false;
 	tok = Parser::GetNextToken(in, line);
 	string lexeme = tok.GetLexeme();
-	cout << "in Factor: tok " << tok << endl;
+	//cout << "in Factor: tok " << tok << endl;
 
 	if (tok.GetToken() == IDENT){
 		if (!(defVar.find(lexeme)->second)){  // not defined
