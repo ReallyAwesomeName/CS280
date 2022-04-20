@@ -1,0 +1,78 @@
+ASSIGNMENT=prog3
+
+ex=~/$ASSIGNMENT
+
+cd $LIB/public/PA_Spring2022/PA3Interpreter
+
+infile=~/prog3.cpp
+original=prog3.cpp
+
+st=1
+diff $infile $original
+st=$?
+
+if [ $st -eq 0 ] 
+then
+    [ ! -e $ex ] && echo Cannot find the program, please build it! && exit 1
+else
+  exit 1
+fi
+
+ 
+ofile=`mktemp`
+ 
+cases=("" "testprog1" "testprog2" "testprog3" "testprog4" "testprog5" "testprog6" "testprog7" "testprog8" "testprog9" "testprog10" "testprog11" "testprog12" "testprog13" "testprog14")
+  
+
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14;
+do
+	score=0
+    errs=0
+    echo RUNNING ${cases[i]}
+    eval $LIB/public/wrapcase.pl -- "bash -c \"$ex ${cases[$i]} 2>&1\"" | tee $ofile
+
+    rc1=1
+    rc2=1
+    rc3=1
+    if [ $i -ge 7 ] 
+    then
+       diff $ofile ${cases[$i]}.correct
+       rc1=$?  
+       rc2=0
+       rc3=0
+    else 
+       
+       errs=$(egrep '[0-9]+: ([a-zA-Z0-9]+[ \n\r\t\f])+' $ofile | wc -l)
+       egrep "Number of Errors $errs" $ofile 
+       rc1=$?
+       
+       egrep "Unsuccessful Interpretation" $ofile
+       rc3=$?
+
+       if (( $errs == 0 && $rc3 == 0 )) 
+       then 
+            rc1=1
+       fi
+
+       lineno=$(egrep '[0-9]+' $ofile)
+        
+       egrep "$lineno: " ${cases[$i]}.correct
+       rc2=$?                       
+    fi
+
+    if [ $i -le 9 ] 
+    then
+        [ $rc1 -eq 0 -a $rc2 -eq 0 -a $rc3 -eq 0 ] && score=1
+        echo RESULT: ${cases[i]}  "[ " $score " / 1 ]"
+    else
+        [ $rc1 -eq 0 -a $rc2 -eq 0 -a $rc3 -eq 0 ] && score=2
+        echo RESULT: ${cases[i]}  "[ " $score " / 2 ]"
+    fi
+
+    echo "-----------------------------------------------------"
+
+    rm $ofile
+done
+
+
+exit $score
