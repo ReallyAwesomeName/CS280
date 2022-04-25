@@ -9,30 +9,29 @@
 #include "NewsPaperSubscriber.h"
 
 class WeeklySubscriber:public NewsPaperSubscriber{
-    string Weekly_Rate = "$10.5";
+    string Weekly_Rate = "10.5";
 
     public:
     WeeklySubscriber(Address address){
         st_Address = address;
         setRate(Weekly_Rate);
     }
-    // ~WeeklySubscriber(){}
+    // destructor
+    ~WeeklySubscriber(){}
 
-    void setRate() override;
     public: 
-    void setRate(string Weekly_Rate){
+    void setRate(string Weekly_Rate) override{
         rate = Weekly_Rate;
         return;
     }
-    void print() override;
     public:
-    void print(Address sub){
+    void print() override{
         Address thisaddress = getAddress();
         std::cout << thisaddress.getstreetAddress() << std::endl;
-        std::cout << thisaddress.getCity() << ", " << thisaddress.getState() << thisaddress.getzipCode() << std::endl;
-        std::cout << getRate() << std::endl;
+        std::cout << thisaddress.getCity() << ", " << thisaddress.getState() 
+            << " " << thisaddress.getzipCode() << std::endl;
+        std::cout << "Rate: " << getRate() << std::endl;
         std::cout << "Service Type: Weekly Subscriber" << std::endl;
     }
-    
 };
 #endif
