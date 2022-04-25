@@ -134,7 +134,7 @@ its type.
 specified in the Value class definition (operator+, operator-, operator*, operator/,
 operator==, operator>, operator<).
 
-### “parserInt.h” 
+### “parserInt.h”
 
 - includes the prototype definitions of the parser functions as in “parse.h” header file with the following applied modifications:
 
@@ -148,7 +148,7 @@ operator==, operator>, operator<).
 ### "parse.cpp”
 
 - Implementations of parser functions in “parse.cpp” from Programming Assignment 2.
-    - It will be provided after the deadline of PA 2 submission (including any
+  - It will be provided after the deadline of PA 2 submission (including any
 extensions).
 
 ### “prog3.cpp”
@@ -159,10 +159,12 @@ language.
 - A call to Prog() function is made. If the call fails, the program should stop and display a
 message as "Unsuccessful Interpretation ", and display the number of errors detected. For
 example:
+
     ```text
     Unsuccessful Interpretation
     Number of Syntax Errors: 3
     ```
+
 - If the call to Prog() function succeeds, the program should stop and display the message
 "Successful Execution", and the program stops.
 
@@ -175,9 +177,11 @@ Cases.zip” on Canvas assignment. The testing case of each file is defined in t
 table below.
 - Automatic grading of testing files with no errors will be based on checking against the
 generated outputs by the executed PLSL source program and the output message:
+
     ```text
     Successful Execution
     ```
+
 - In each of the other testing files, there is one semantic error at a specific line. The automatic
 grading process will be based on the statement number at which this error has been found
 and associated with one or more error messages.
