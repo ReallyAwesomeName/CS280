@@ -15,8 +15,8 @@ using namespace std;
 
 extern bool Prog(istream& in, int& line);
 extern bool DeclBlock(istream& in, int& line);
-extern bool DeclStmt(istream& in, int& line, LexItem & idtok);
-// extern bool DeclStmt(istream& in, int& line);
+// extern bool DeclStmt(istream& in, int& line, LexItem & idtok);
+extern bool DeclStmt(istream& in, int& line);
 extern bool ProgBody(istream& in, int& line);
 extern bool Stmt(istream& in, int& line);
 extern bool WriteLnStmt(istream& in, int& line);

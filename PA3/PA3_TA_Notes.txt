@@ -1,0 +1,210 @@
+1) At the top of your file
+
+	
+	Keep these things in your file (GLOBABL VARS)
+	a) defVar
+	b) SymTable <string, token>  [string = lexeme = (variable name)]   --> [token = Either STRING/REAL/INTEGER]
+	c) TempsResults (Important p  =  6)
+	d) ValQue (queue<Value> *Queue;)
+	e) I made an extra vector for the Ident tokens, and populated this in IdentList, and used it to populate SymTable
+-------------------------------------------------------------------------------
+
+
+2) Functions I didn't touch
+	a) Prog
+	b) ProgBody
+	c) DeclBlock
+	d) Stmt (Make sure to remove "For Case")
+	e) WriteLn
+	f) Expr
+	g) ExprList (not sure)
+
+-------------------------------------------------------------------------------
+3) Describe If-stmt major fix
+	a) If LogicExpr returns true
+		--> NO SYNTAX ERRORS
+	b) If LogixExpr returns false
+		--> THERE EXISTS A SYNTAX ERROR, RERURN FALSE AND ParsError out
+	-------------------------------------------------------------------------------
+	NEXT STEP
+	-------------------------------------------------------------------------------
+	CHECK THE BOOLEAN ITSELF
+
+	a) If the Boolean of LogicExpr is true
+		--> Run the if-stmt logic (STMT function call)
+		--> After this, skip all the tokens till u see a SEMICOL
+
+	b) If the Boolean of LogicExpr is false
+		--> Skip the if-stmt logic (STMT function call)
+		--> After this, skip all the tokens till u see either an ELSE or a SEMICOL
+
+	**) DO THIS IN A WHILE LOOP
+-------------------------------------------------------------------------------
+
+4) Purpose of RetVal:
+	a) Store all of your int/string/decimal values so that it can be compared with / used later
+-------------------------------------------------------------------------------
+
+5) How do we check if a value that is being assign to a variable is of the right type?
+
+
+a) Make sure to use SymTable, because this holds a string and a token
+	--> The string is going to be the variable name (which is the lexeme of the token)
+	--> The token is going to either be REAL/INTEGER/STRING (which is the Token)
+	
+	--> ESSENCE (you want to make sure the declaration value type matches the assignment value type)
+
+	-->TIPS FOR THIS TO WORK
+		a) Populate SymTable in DeclStmt
+			--> For this to work, I reccomend making a GLOBAL vector, and in your IdentList function,
+				populate it with all the idents (In essence, populate your Ident Vector in IdentList)
+			--> Next, loop through this vector and add it into symtable
+			--> After this, CLEAR YOUR VECTOR
+
+	AFTER ALL OF THIS --------------------------------------------------------------------------->
+	
+	a) When you are assinging values in assignment statement, you want to pull the type of the variable from 
+	   Symtable, and then compare this with the type of the value object (Which is Retval)
+		--> Make sure to do this IN ASSIGNSTMT
+		--> retVal.GetType() --> This returns the type of your current value
+		--> If you have a INTEGER and a REAL, or a REAL and an INTEGER, then this WORKS, and there is no problem
+
+-------------------------------------------------------------------------------------------------------------
+
+6) Can we talk about "bool IdentList(istream& in, int& line, vector<string> &IdList)? specifically --> IdList <--"
+
+	a) This is just an alternate method (I used a global vector to store my Ident Tokens. This seems to be an 
+		alternate method to achieve the same thing)
+
+--------------------------------------------------------------------------------------------------------------
+
+7) Where to populate our maps /manipulate for the negative factor (-1)
+	a) SymTable gets populated in DeclStmt
+	b) defVar gets populated in IdentList
+	c) TempsResults gets populated in AssignStmt
+	d) Deal with the -1 (negative factor) in Factor
+
+---------------------------------------------------------------------------------------------------------------
+
+8) Tips before You fully start working on this
+	a) Remember, We are given two functions (Expr and Writeln)
+	--> So, since the ebnf rules are very similar for Expr and Term
+	--> --> You can copy Bassel's Expr function for Term, replace the +/- with the */(/), and replace the Term with SFactor
+	b) Make sure to define and finish all the functions in Val.H
+		--> MAKE SURE THERE ARE NO MISMATCH TYPES IN VAL.H, THIS WILL RESULT IN A WORLD OF HURT
+	c) Don't be afraid to make a vector or two to help make life easier
+	d) MAKE SURE TO GET TESTCASE10 (testprog10) 	FIRST, AS THIS MEANS YOUR CODE IS BASICALLY KINDA CORRECT
+	--> and will make getting the other test cases much easier to do. 
+	e) You can either use val.cpp, or val.h. I reccomend val.h and no val.cpp, just makes things easier
+		--> For this, go to Ra8, copy your val.h from there, paste it into val.h for PA3, and complete the empty/missing functions 
+			in val.h
+	f) Parseint.cpp/Parse.cpp
+		--> Get his parseint.cpp, as as you will see there are only two functions given, which are Writeln and Expr
+		--> Then, go to his parse.cpp and and get the reamining functions and paste it into parseint.cpp, and then just fix
+			the headers (aka the parameters passed in), and you guys should be chilling
+		--> We want PARSEINT.CPP, and we DO NOT WANT PARSE.cpp
+		---------------------------------------------
+		******--> Remove Your ForStmt function from your ParseInt.cpp, as we do not need it. Also, remove the Forstmt case from the switch
+			      in your stmt function
+		---------------------------------------------	
+-----------------------------------------------------------------------------------------------------------------
+
+9) What each test case is looking for
+	Case 1) We defined the variable P as a REAL, but it has not been
+	   defined, so that is the issue. We can't print p if it has
+       not been defined yet
+
+	Case 2) We know thst the variable str is type String, so 	
+            comparing this variable to an integer doesn't make
+            sense and thus results in an error
+
+	Case 3) We know that var r = 8, var p = 0, and we are trying to 
+            set var a = r/p, and since p = 0, we know that 
+            this will yield in undefined, and thus we must error
+			 out. 
+			--> Check if val.GetInt() = 0 OR val.GetRel() == 0.0
+	
+	case 4) We know that var Str is of type string, and we also 
+			 know that strings can't be postive or negative, so	
+   			 ofcourse, a postive string would yield an error
+
+	case 5) You can't add a string to an real/integer, but this is 
+		    on line 9, so ofcourse this will result an error
+
+	case 6) We defined var P as a real, but we are trying to assign
+ 			 a string to var p, and a string is != a real, so this 
+			 doesnt work and there is an error
+
+	case 7) Var P is defined as a Real, but we have given it an int,
+			so, we must convert the 6 to a 6.00
+	
+	case 8) We need to convert p and r from 4 and 8 into 4.00 and 
+			8.00 because they are defined as reals, but we gave them
+			ints. Also, we need to skip the if stmt and JUST DO THE ELSE
+			as the bool for the if condition evaluates to false
+
+	case 9) We need to convert p and r from 5 and 8 into 5.00 and 
+			8.00 because they are defined as reals, but we gave them
+			ints. Also, in this case if bool condition evaluates to 
+			true, so we DO want to run the if stmt logic, and we want to
+			skip the Else, becuae we already did the if
+
+	case 10) This is the first testcase you want to complete, 
+			  This makes sure that your code is working somewhat correctly
+			  To make this work, populate valQue properly, and it should work
+			  The items should print correctly.
+
+    cas 11) We want to convert var A and var P from ints to reals because
+		     they were defined as Reals. Also, the initial if stmt boolean condition
+			 is false, so we go into the else and excute that logic, 
+			 skipping the initial if stmt
+
+	case 12) We want to convert var R and var P from ints to reals because
+		     they were defined as Reals. We want to run the if stmt and skip the 
+			 else stmt because the if stmt bool condition is true. Thus,we run the if
+			 and skip the else. We need to convert b from a real to an int because
+			 even though it was passed in a real, it has been declared as an int
+
+	case 13) Here, we are performing the division twice. Where it says j = i/r, we know that 
+			  i/r wil yield a real value, but because j has been declared as an integer
+			  we must convert that real into an integer. 
+
+	case 14) Here, we need to convert p and a from int to real. Also,
+			  We need to skip the else because the if stmt bool is true
+			 .MAKE SURE TO ACCOUNT FOR THE NEGATIVE SIGN FOR -3, THIS 
+			  WILL HAVE TO BE EXPLICITLY DONE, AS IT IS NOT DONE FOR YOU
+---------------------------------------------------------------------------------------
+
+10) Example of how the logic for converting between types work:
+
+		// Say we are looking for a decimal, but instead we have an integer
+		if retVal.GetType() == INTEGER
+		retVal = (float)retVal.GetInt()
+---------------------------------------------------------------------------------------
+11) Purpose of RetVal and extra value objects (such as val1, and val2)
+	a) RetVal is used for storing the result of the final product
+		--> Basicaly, you store the result after doing all the operations
+	b) You create extra value objects if you need to store values from different function calls
+	   that you will be using/comparing later. So, it is just a holder for previous data. 
+----------------------------------------------------------------------------------------
+12) Final Reminder and Closing
+
+	a) Make sure to typecast your variables correctly. If all your logic is correct and you add typecasting,  
+	   it should get you between a 5 - 8 point boost depending on your code
+
+	b) GOOD LUCK
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
