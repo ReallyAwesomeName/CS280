@@ -7,9 +7,10 @@
 #include "parseInt.h"
 
 map<string, bool> defVar;
-map<string, Token> SymTable;  // map declared variables to types
-map<string, Value> TempsResults;
-queue <Value> ValQue;
+map<string, Token> SymTable;  // map declared variable strings to their token
+map<string, Value> TempsResults;  // variable strings and values
+queue <Value> *ValQue;  // for printing
+queue <string> VarQue;
 
 namespace Parser {
 	bool pushed_back = false;
@@ -153,7 +154,7 @@ bool DeclBlock(istream& in, int& line) {
 	LexItem t = Parser::GetNextToken(in, line);
 	if(t == VAR)
 	{
-		status = DeclStmt(in, line);
+		status = DeclStmt(in, line, t);
 		
 		while(status)
 		{
@@ -164,7 +165,7 @@ bool DeclBlock(istream& in, int& line) {
 				ParseError(line, "Missing semicolon in Declaration Statement.");
 				return false;
 			}
-			status = DeclStmt(in, line);
+			status = DeclStmt(in, line, tok);
 		}
 		
 		tok = Parser::GetNextToken(in, line);
@@ -187,23 +188,32 @@ bool DeclBlock(istream& in, int& line) {
 	
 }//end of DeclBlock function
 
-bool DeclStmt(istream& in, int& line)
+// FIXME: fucked atm, go through VarQue for type assignment?
+bool DeclStmt(istream& in, int& line, LexItem& idtok)
 {
 	LexItem t;
-	bool status = IdentList(in, line, t);
+	bool status = IdentList(in, line, idtok);
 	if (!status)
 	{
 		ParseError(line, "Incorrect variable in Declaration Statement.");
 		return status;
 	}
-	
 	t = Parser::GetNextToken(in, line);
+	if (defVar.find(t.GetLexeme())->second){
+		VarQue.push(t.GetLexeme());
+	}
 	if(t == COLON)
 	{
 		t = Parser::GetNextToken(in, line);
 		if(t == INTEGER || t == REAL || t == STRING)
 		{
-			SymTable[t.GetLexeme()] = t.GetToken();
+			// assign declared variable a type
+			while (!VarQue.empty()){
+				cout << "assigning type: " << VarQue.front() << ", " << t.GetToken() << endl;
+				SymTable[VarQue.front()] = t.GetToken();
+				VarQue.pop();
+
+			}
 			return true;
 		}
 		else
@@ -232,9 +242,19 @@ bool IdentList(istream& in, int& line, LexItem type) {
 		identstr = tok.GetLexeme();
 		if (!(defVar.find(identstr)->second))
 		{
+			// FIXME: gets here, but not working at all
+			// TODO: maybe just hardcode for now if vars str, str1, str2 are always the only strings
+			// FIXME: SymTable should be populated in DeclStmt, NOT HERE
 			defVar[identstr] = true;
-			cout << "adding to SymTable[identstr]: identstr: " << identstr << " type.GetToken(): " << type.GetToken() << endl;
-			SymTable[identstr] = type.GetToken();  // record type
+			if (identstr[0] == 'S'){
+				cout << "***adding to SymTable[identstr]: identstr: " << identstr << " TYPE: " << STRING << endl;
+				SymTable[identstr] = STRING;  // record type
+			}
+			else{
+				cout << "adding to SymTable[identstr]: identstr: " << identstr << " type.GetToken(): " << type.GetToken() << endl;
+				SymTable[identstr] = type.GetToken();  // record type
+				
+			}
 		}	
 		else
 		{
@@ -335,9 +355,10 @@ bool WriteLnStmt(istream& in, int& line) {
 	}
 
 	// execute print
-	while(!ValQue.empty()){
-		cout << ValQue.front();
-		ValQue.pop();
+	while(!(*ValQue).empty()){
+		// Value nv = (*ValQue).front();
+		cout << (*ValQue).front();
+		ValQue->pop();
 	}
 	cout << endl;
 	
@@ -562,6 +583,7 @@ bool ExprList(istream& in, int& line) {
 		ParseError(line, "Missing Expression");
 		return false;
 	}
+	// ValQue.push(val);
 	
 	LexItem tok = Parser::GetNextToken(in, line);
 	
@@ -582,7 +604,7 @@ bool ExprList(istream& in, int& line) {
 }
 
 //Expr:= Term {(+|-) Term}
-bool Expr(istream& in, int& line, Value& retVal) {
+bool Expr(istream& in, int& line, Value& retVal) {  // retVal is for storing result
 	Value val;
 	Value val1;
 	bool t1 = Term(in, line, val);
