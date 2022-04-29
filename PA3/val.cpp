@@ -15,6 +15,9 @@ Value Value::operator+(const Value& op) const{
         if (IsReal()){
             return Value(Rtemp + op.GetReal());
         }
+        if (IsString()){
+            return Value(Stemp + op.GetString());
+        }
     }
     // both int and float, make result float
     else if (IsInt() && op.IsReal()){

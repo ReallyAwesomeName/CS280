@@ -14,7 +14,7 @@ using namespace std;
 map<string, bool> defVar;
 map<string, Token> SymTable;  // map declared variable strings to their token
 map<string, Value> TempsResults;  // variable strings and values
-vector<string> IdList;  // use for populating maps
+vector<string> IdList;  // use for populating SymTable
 queue <Value> *ValQue;  // for printing
 queue <string> VarQue;  // FIXME: get rid of this, use IdList instead
 
@@ -207,21 +207,28 @@ bool DeclStmt(istream& in, int& line)
 		return status;
 	}
 	t = Parser::GetNextToken(in, line);
-	if (defVar.find(t.GetLexeme())->second){
-		VarQue.push(t.GetLexeme());
-	}
+	// if (defVar.find(t.GetLexeme())->second){
+	// 	VarQue.push(t.GetLexeme());
+	// }
 	if(t == COLON)
 	{
 		t = Parser::GetNextToken(in, line);
 		if(t == INTEGER || t == REAL || t == STRING)
 		{
-			// assign declared variable a type
-			while (!VarQue.empty()){
-				cout << "assigning type: " << VarQue.front() << ", " << t.GetToken() << endl;
-				SymTable[VarQue.front()] = t.GetToken();
-				VarQue.pop();
-
+			// assign declared variable a type --> populate SymTable
+			for (int i = 0; i < IdList.size(); i++){
+				string current_variable = IdList[i];
+				// cout << "populating SymTable --> " << current_variable << ", " << t.GetToken() << endl;
+				SymTable[current_variable] = t.GetToken();
 			}
+			// clear IdList
+			IdList.clear();
+
+			// while (!VarQue.empty()){
+			// 	cout << "assigning type: " << VarQue.front() << ", " << t.GetToken() << endl;
+			// 	SymTable[VarQue.front()] = t.GetToken();
+			// 	VarQue.pop();
+			// }
 			return true;
 		}
 		else
@@ -251,19 +258,22 @@ bool IdentList(istream& in, int& line) {
 		identstr = tok.GetLexeme();
 		if (!(defVar.find(identstr)->second))
 		{
-			// FIXME: gets here, but not working at all
-			// TODO: maybe just hardcode for now if vars str, str1, str2 are always the only strings
-			// FIXME: SymTable should be populated in DeclStmt, NOT HERE
+			// populate defVar
 			defVar[identstr] = true;
-			if (identstr[0] == 'S'){
-				cout << "***adding to SymTable[identstr]: identstr: " << identstr << " TYPE: " << STRING << endl;
-				SymTable[identstr] = STRING;  // record type
-			}
-			else{
-				cout << "adding to SymTable[identstr]: identstr: " << identstr << " tok.GetToken(): " << tok.GetToken() << endl;
-				SymTable[identstr] = tok.GetToken();  // record type
+			// TODO: populate IdList --> use to populate SymTable in DeclStmt()
+			IdList.push_back(identstr);
+
+			// FIXME: gets here, but not working at all
+			// FIXME: SymTable should be populated in DeclStmt, NOT HERE
+			// if (identstr[0] == 'S'){
+			// 	cout << "***adding to SymTable[identstr]: identstr: " << identstr << " TYPE: " << STRING << endl;
+			// 	SymTable[identstr] = STRING;  // record type
+			// }
+			// else{
+			// 	cout << "adding to SymTable[identstr]: identstr: " << identstr << " tok.GetToken(): " << tok.GetToken() << endl;
+			// 	SymTable[identstr] = tok.GetToken();  // record type
 				
-			}
+			// }
 		}	
 		else
 		{
@@ -317,6 +327,7 @@ bool Stmt(istream& in, int& line) {
 		break;
 
 	case IDENT:
+		// cout << "in Stmt(), pushing back token " << t << endl;
 		Parser::PushBackToken(t);
         status = AssignStmt(in, line);
 		
@@ -515,7 +526,9 @@ bool Var(istream& in, int& line, LexItem& idtok)
 		{
 			ParseError(line, "Undeclared Variable");
 			return false;
-		}	
+		}
+		// push back for assignstmt to get it again?
+		Parser::PushBackToken(tok);
 		return true;
 	}
 	else if(tok.GetToken() == ERR){
@@ -537,24 +550,28 @@ bool AssignStmt(istream& in, int& line) {
 	
 	varstatus = Var(in, line, t);
 
-	temp = t.GetLexeme();	
+	t = Parser::GetNextToken(in, line);
+	temp = t.GetLexeme();
+	// cout << "temp: " << temp << endl;
 	
 	if (varstatus){
 		t = Parser::GetNextToken(in, line);
 		if (t == ASSOP){
+			// cout << "passing to Expr: " << val << endl;
 			status = Expr(in, line, val);
 			if(!status) {
 				ParseError(line, "Missing Expression in Assignment Statment");
 				return status;
 			}
 			// added SymTable and TempsResults stuff here
-			// FIXME: use INTEGER or VINT here?
-			cout << "about to check symtable[temp] for int: " << SymTable[temp] << " val.GetType(): " << val.GetType() << endl;
+			// TODO: populate TempsResults here --> check for correct type with SymTable
+			// temp = t.GetLexeme();
+			// cout << "about to check SymTable[temp]: " << temp << " val.GetType(): " << val.GetType() << endl;
 			if ((SymTable[temp] == INTEGER) && (val.GetType() == VREAL)){
 				fv = val.GetReal();
 				val.SetType(VINT);
 				val.SetInt((int)fv);
-				cout << "adding temp, val: " << temp << "," << val << endl;
+				// cout << "adding temp, val: " << temp << "," << val << endl;
 				TempsResults[temp] = val;
 			}
 
@@ -568,9 +585,14 @@ bool AssignStmt(istream& in, int& line) {
 			// 	ParseError(line, "(assignstmt) bad assign operation");
 			// 	return false;
 			// }
-			else{ // no change needed
-				TempsResults[temp] = val;
+			if ((SymTable[temp] == STRING) && (val.GetType() == VSTRING)){
+				// cout << "******adding to TempsResults: " << temp << ", " << val << endl;
+				TempsResults[temp] = val.GetString();
 			}
+			// else{ // no change needed
+			// 	cout << "******adding to TempsResults: " << temp << ", " << val << endl;
+			// 	TempsResults[temp] = val;
+			// }
 		}
 		else if(t.GetToken() == ERR){
 			ParseError(line, "Unrecognized Input Pattern");
@@ -600,7 +622,7 @@ bool ExprList(istream& in, int& line) {
 		ParseError(line, "Missing Expression");
 		return false;
 	}
-	// ValQue.push(val);
+	ValQue->push(val);
 	
 	LexItem tok = Parser::GetNextToken(in, line);
 	
@@ -827,7 +849,7 @@ bool Factor(istream& in, int& line, int sign, Value& retVal) {
 		string lexeme = tok.GetLexeme();
 		if (!(defVar.find(lexeme)->second))
 		{
-			ParseError(line, "Using Undefined Variable");
+			ParseError(line, "(defVar) Using Undefined Variable");
 			return false;	
 		}
 		// added check for signed string
@@ -837,7 +859,8 @@ bool Factor(istream& in, int& line, int sign, Value& retVal) {
 		}
 		// added TempResults check for definition
 		if (TempsResults.find(lexeme) == TempsResults.end()){
-			ParseError(line, "Using Undefined Variable");
+			ParseError(line, "(TempsResults) Using Undefined Variable");
+			cout << "lexeme: " << lexeme << endl;
 			return false;
 		}
 		// variable is defined
