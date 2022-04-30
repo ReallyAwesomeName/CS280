@@ -382,6 +382,11 @@ bool WriteLnStmt(istream& in, int& line) {
 	while (!(*ValQue).empty())
 	{
 		Value nextVal = (*ValQue).front();
+		// added check for printing undefined variable
+		if (nextVal.IsErr()){
+			ParseError(line, "Undefined Variable");
+			return false;
+		}
 		cout << nextVal;
 		ValQue->pop();
 	}
@@ -394,7 +399,8 @@ bool WriteLnStmt(istream& in, int& line) {
 //IfStmt:= if (Expr) then Stm} [Else Stmt]
 //TODO: IfStmt ::= IF ( LogicExpr ) THEN Stmt [ELSE Stmt]
 bool IfStmt(istream& in, int& line) {
-	bool ex=false, status; 
+	// bool ex=false;
+	bool status; 
 	LexItem t;
 	Value val;
 	Value expval;
@@ -405,12 +411,12 @@ bool IfStmt(istream& in, int& line) {
 		ParseError(line, "Missing Left Parenthesis");
 		return false;
 	}
-	
-	ex = LogicExpr(in, line, val);
-	if(!ex){
-		ParseError(line, "Missing if statement Logic Expression");
-		return false;
-	}
+	LogicExpr(in, line, val);
+	// ex = LogicExpr(in, line, val);
+	// if(!ex){
+	// 	ParseError(line, "Missing if statement Logic Expression");
+	// 	return false;
+	// }
 	
 	t = Parser::GetNextToken(in, line);
 	if(t != RPAREN ) {
@@ -418,68 +424,49 @@ bool IfStmt(istream& in, int& line) {
 		return false;
 	}
 
-	if (val.IsBool()){
-		if(val.GetBool()){
-			bool s = Stmt(in, line);
-			if (!s){
-				ParseError(line, "(IfStmt) missing stmt in if");
-				return false;
-			}
-		}
-		else{
-			// condition false - skip until else or semicolon
-			while ((t != SEMICOL) && (t != ELSE)){
-				t = Parser::GetNextToken(in, line);
-			}
-		}
-	}
-
-				// added run-time exec here
-			// FIXME: THIS SHOULD BE DONE IN IfStmt()
-			// if (tok == GTHAN){
-			// 	retVal = (val > val1);
-			// }
-			// else if (tok == EQUAL){
-			// 	retVal = (val == val1);
-			// }
-			// else if (tok == LTHAN){
-			// 	retVal = (val < val1);
-			// }
-			// if (retVal.GetType() == VERR){
-			// 	ParseError(line, "(LogicExpr) run-time error - bad operation");
-			// 	return false;
-			// }
-
-			// if (retVal.GetBool()){
-			// 	return true;
-			// }
-			// else if (!retVal.GetBool()){
-			// 	// cout << "new false" << endl;
-			// 	return false;
-			// }
-	
-
-	// if ((t == RPAREN) && (!ex)){
-	// 	// LogicExpr is false, skip to ELSE or ; (; in case of no ELSE)
-	// 	while ((t != ELSE) && (t != SEMICOL)){
-	// 		t = Parser::GetNextToken(in, line);
-	// 	}
-	// }
-
-
-
 	t = Parser::GetNextToken(in, line);
-	if(t != THEN)
+	// cout << "******** t: " << t << endl;
+	if((t != THEN) && (t != ELSE) && (t != SEMICOL))
 	{
 		ParseError(line, "If-Stmt Syntax Error");
 		return false;
 	}
-	status = Stmt(in, line);
-	if(!status)
-	{
-		ParseError(line, "Missing Statement for If-Stmt Then-Part");
-		return false;
+	// status = Stmt(in, line);
+	// if(!status)
+	// {
+	// 	ParseError(line, "Missing Statement for If-Stmt Then-Part");
+	// 	return false;
+	// }
+	if (val.IsBool()){  // condition check
+		// cout << "val.GetBool(): " << val.GetBool() << endl;
+		if(val.GetBool()){
+			// cout << "val.GetBool() was true: " << val.GetBool() << endl;
+			Stmt(in, line);
+			// bool s = Stmt(in, line);
+			// if (!s){
+			// 	ParseError(line, "(IfStmt) missing stmt in if");
+			// 	return false;
+			// }
+			// skip to SEMICOL
+			while (t != SEMICOL){
+				t = Parser::GetNextToken(in, line);
+			}
+			Parser::PushBackToken(t);
+		}
+		else{
+			// cout << "val.GetBool() was false: " << val.GetBool() << endl;
+			// condition false - skip until else or semicolon
+			while ((t != SEMICOL) && (t != ELSE)){
+				t = Parser::GetNextToken(in, line);
+			}
+			Parser::PushBackToken(t);
+			if (t == ELSE){
+				// t = Parser::GetNextToken(in, line);
+				Stmt(in, line);
+			}
+		}
 	}
+
 	t = Parser::GetNextToken(in, line);
 	if( t == ELSE ) {
 		status = Stmt(in, line);
@@ -497,7 +484,7 @@ bool IfStmt(istream& in, int& line) {
 }//End of IfStmt()
 
 
-// NO LONGER USED
+// ============================= NO LONGER USED =============================
 //ForStmt ::= FOR Var := ICONST (TO | DOWNTO) ICONST DO Stmt
 bool ForStmt(istream& in, int& line)
 {
@@ -636,12 +623,15 @@ bool AssignStmt(istream& in, int& line) {
 				// no changes needed
 				TempsResults[temp] = val;
 			}
-
-
 			if ((SymTable[temp] == STRING) && (val.GetType() != VSTRING)){
-				ParseError(line, "(assignstmt) a problem lol");
+				ParseError(line, "Illegal Assignment Operation");
 				return false;
 			}
+			if ((SymTable[temp] == REAL) && ((val.GetType() != VREAL) && (val.GetType() != VINT))){
+				ParseError(line, "Illegal Assignment Operation");
+				return false;
+			}
+			
 			// TODO: don't need this block?
 			// else if (!(val.GetType() == VREAL || val.GetType() == VINT)){
 			// 	ParseError(line, "(assignstmt) bad assign operation");
@@ -810,13 +800,13 @@ bool Term(istream& in, int& line, Value& retVal){
 			// check for div by 0
 			if (val1.IsInt()){
 				if (val1.GetInt() == 0){
-					ParseError(line, "(term) run-time error - div by 0");
+					ParseError(line, "Run-Time Error-Illegal Division by Zero");
 					return false;
 				}
 			}
 			else if (val1.IsReal()){
 				if (val1.GetReal() == 0){
-					ParseError(line, "(term) run-time error - div by 0");
+					ParseError(line, "Run-Time Error-Illegal Division by Zero");
 					return false;
 				}
 			}
@@ -883,26 +873,26 @@ bool LogicExpr(istream& in, int& line, Value& retVal) {
 			return false;
 		}
 		// added run-time exec here
-		// FIXME: THIS SHOULD BE DONE IN IfStmt()?
-		// if (tok == GTHAN){
-		// 	retVal = (val > val1);
-		// }
-		// else if (tok == EQUAL){
-		// 	retVal = (val == val1);
-		// }
-		// else if (tok == LTHAN){
-		// 	retVal = (val < val1);
-		// }
-		// if (retVal.GetType() == VERR){
-		// 	ParseError(line, "(LogicExpr) run-time error - bad operation");
-		// 	return false;
-		// }
+		// FIXME: THIS SHOULD BE DONE IN IfStmt() or LogicExpr()?
+		if (tok == GTHAN){
+			retVal = (val > val1);
+		}
+		else if (tok == EQUAL){
+			retVal = (val == val1);
+		}
+		else if (tok == LTHAN){
+			retVal = (val < val1);
+		}
+		if (retVal.GetType() == VERR){
+			ParseError(line, "Run-Time Error-Illegal Mixed Type Operands for a Logic Expression");
+			return false;
+		}
 
-		// if (retVal.GetBool()){
-		// 	return true;
-		// }
+		if (retVal.GetBool()){
+			return true;
+		}
 		// else if (!retVal.GetBool()){
-		// 	// cout << "new false" << endl;
+		// 	cout << "new false" << endl;
 		// 	return false;
 		// }
 
@@ -919,16 +909,17 @@ bool Factor(istream& in, int& line, int sign, Value& retVal) {
 	
 	if(tok == IDENT){
 		string lexeme = tok.GetLexeme();
+		// cout << "in Factor-IDENT: Lexeme = " << lexeme << endl;
 		if (!(defVar.find(lexeme)->second))
 		{
 			ParseError(line, "(defVar) Using Undefined Variable");
 			return false;	
 		}
 		// added check for signed string
-		if (((sign == 1) || (sign == -1)) && (retVal.IsString())){
-			ParseError(line, "Illegal Operand Type for Sign Operator");
-			return false;
-		}
+		// if ((sign != 0) && (retVal.IsString())){
+		// 	ParseError(line, "Illegal Operand Type for Sign Operator");
+		// 	return false;
+		// }
 		// added TempResults check for definition
 		// if (TempsResults.find(lexeme) == TempsResults.end()){
 		// 	ParseError(line, "(TempsResults) Using Undefined Variable");
@@ -947,12 +938,19 @@ bool Factor(istream& in, int& line, int sign, Value& retVal) {
 			if (retVal.IsReal()){
 				retVal.SetReal(-(retVal.GetReal()));
 			}
-			// added check for signed string
-			if (retVal.IsString()){
-				ParseError(line, "Illegal Operand Type for Sign Operator");
-				return false;
-			}
+			// FIXME: added redundant check for signed string
+			// if (retVal.IsString()){
+			// 	ParseError(line, "Illegal Operand Type for Sign Operator");
+			// 	return false;
+			// }
 		}
+		// if (sign == 1){
+		// 	// FIXME: added another redundant check for signed string
+		// 	if (retVal.IsString()){
+		// 		ParseError(line, "Illegal Operand Type for Sign Operator");
+		// 		return false;
+		// 	}
+		// }
 
 		return true;
 	}
@@ -968,6 +966,11 @@ bool Factor(istream& in, int& line, int sign, Value& retVal) {
 		return true;
 	}
 	else if(tok == SCONST) {
+		// cout << "in Factor-SCONST: tok = " << tok << endl;
+		if (sign != 0){
+			ParseError(line, "Illegal Operand Type for Sign Operator");
+			return false;
+		}
 		retVal = Value(tok.GetLexeme());
 		return true;
 	}
