@@ -10,19 +10,12 @@ interpretative languages.
 
 ## Instructor
 
-Course Instructor: Dr. Bassel Arafeh\
-GITC, Rm. 4408\
-E-mail: ba62@njit.edu\
-Office Hours:\
-Tuesday: 1:10 pm to 2:10 pm\
-Wednesday: 10:00 am to 12:00 noon\
-Thursday: 1:10 pm to 2:10 pm\
-Or by appointment\
+Course Instructor: Dr. Bassel Arafeh
 
 ## Textbook
 
 Robert W. Sebesta, Concepts of Programming Languages, 12th Edition., Pearson, 2019. ISBN-13
-978-0-13499718-6\
+978-0-13499718-6
 
 ## Goals for the Course
 
